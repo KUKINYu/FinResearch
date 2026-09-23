@@ -1,0 +1,3 @@
+# 开发/测试依赖（用户安装时用 requirements.txt，不含本文件）
+-r requirements.txt
+pytest>=8.0

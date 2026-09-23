@@ -17,6 +17,10 @@ build/
 engine/dist/
 app/release/
 
+# Spike 测试数据（真实招股书 PDF，可用 spikes/spike_b/download_prospectuses.py 重新下载）
+spikes/spike_b/data/
+spikes/spike_b/extraction_result.json
+
 # 数据与缓存（引擎运行时生成）
 engine/data/
 *.db
