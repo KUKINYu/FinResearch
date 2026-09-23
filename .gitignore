@@ -1,0 +1,25 @@
+# Node
+node_modules/
+out/
+dist/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+build/
+
+# 数据与缓存（引擎运行时生成）
+engine/data/
+*.db
+*.db-wal
+*.db-shm
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store

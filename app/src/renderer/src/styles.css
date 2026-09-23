@@ -1,0 +1,144 @@
+/* FinResearch 全局样式：深蓝主色 + 浅蓝辅色 + 白 + 浅灰（金融终端风格） */
+:root {
+  --navy: #1b3a6b;
+  --navy-dark: #13294d;
+  --blue: #4a90d9;
+  --blue-light: #eaf2fb;
+  --gray-bg: #f5f7fa;
+  --gray-border: #e3e8ef;
+  --text: #1f2d3d;
+  --text-muted: #7a8aa0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--gray-bg);
+  font-size: 14px;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* 顶栏 */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 56px;
+  background: var(--navy);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #b8c8e0;
+}
+
+.engine-state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #b8c8e0;
+}
+
+.engine-state .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c0c8d4;
+}
+
+.engine-state.ok .dot {
+  background: #4ade80;
+}
+
+.engine-state.off .dot {
+  background: #f87171;
+}
+
+.engine-version {
+  margin-left: 4px;
+  color: #8fa3c0;
+}
+
+/* 主体：侧栏 + 内容 */
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 200px;
+  background: #fff;
+  border-right: 1px solid var(--gray-border);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.nav-item {
+  text-align: left;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  background: var(--gray-bg);
+}
+
+.nav-item.active {
+  background: var(--blue-light);
+  color: var(--navy);
+  font-weight: 600;
+  border-left: 3px solid var(--navy);
+}
+
+.content {
+  flex: 1;
+  padding: 24px 28px;
+  overflow: auto;
+}
+
+.content h2 {
+  font-size: 18px;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+
+.placeholder {
+  color: var(--text-muted);
+  line-height: 1.8;
+}
