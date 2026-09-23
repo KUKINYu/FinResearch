@@ -13,6 +13,10 @@ venv/
 .pytest_cache/
 build/
 
+# 打包产物
+engine/dist/
+app/release/
+
 # 数据与缓存（引擎运行时生成）
 engine/data/
 *.db

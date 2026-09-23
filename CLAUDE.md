@@ -58,10 +58,13 @@ npm run dist         # 打包 Windows 安装包
 ## 已知环境坑（2026-09-23 实测）
 - 本开发会话的 Bash 环境被注入了 `ELECTRON_RUN_AS_NODE=1`（Claude Code VSCode 扩展注入，非系统永久设置），会让 electron.exe 以纯 Node 模式运行（`electron --version` 输出 v20.x 即中招）。**在本会话里启动/测试 Electron 前必须 `unset ELECTRON_RUN_AS_NODE`**。启动脚本 launch.bat / launch.sh 已内置防御。
 - 少数用户机器也可能存在该变量（第三方工具设置）：M8 打包时需处理（安装快捷方式经清理变量的引导器启动）。
+- npm 11 默认拦截安装脚本（allowScripts），electron/esbuild 已放行并写入 package.json。
+- electron-builder 解压 winCodeSign 缓存需符号链接权限：已为用户开启开发人员模式注册表项（HKCU\AppModelUnlock\AllowDevelopmentWithoutDevLicense=1，**重启后生效**）；重启前打包用 `win.signAndEditExecutable: false`（exe 无产品图标/版本信息），M8 重启后恢复 true 并补图标。
 - Git Bash 控制台显示中文路径为乱码（GBK 控制台 vs UTF-8 输出），属显示问题不影响功能。
 
 ## 里程碑进度（见计划文件第七节）
-- [ ] Spike A：打包可行性（Electron + Python 引擎，干净 Windows 安装运行）
+- [x] Spike A：打包可行性——**通过**（引擎 exe 12.9MB；NSIS 安装包 + 免安装版均构建成功；打包成品运行验证：引擎拉起、界面-引擎链路打通）
 - [ ] Spike B：招股书解析 POC（5 份真实招股书，10 项指标正确率 ≥95%）
 - [ ] Spike C：RAG 溯源 POC（bge-small-zh 检索质量 + 页码引用链路）
-- [ ] M1 工程骨架 → M2 上传解析 → M3 阅读器+校对 → M4 财务提取 → M5 异常溯源 → M6 搜索 → M7 AI 问答 → M8 打包发布
+- [x] M1 工程骨架（Electron 壳 + 引擎启停 + 握手协议 + skill 脚本 + 开发规范；已提交 eb6a3e2）
+- [ ] M2 上传解析 → M3 阅读器+校对 → M4 财务提取 → M5 异常溯源 → M6 搜索 → M7 AI 问答 → M8 打包发布

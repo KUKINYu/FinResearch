@@ -29,5 +29,39 @@
   "allowScripts": {
     "electron@33.4.11": true,
     "esbuild@0.21.5": true
+  },
+  "build": {
+    "appId": "com.finresearch.desktop",
+    "productName": "FinResearch",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../engine/dist/finengine.exe",
+        "to": "engine/finengine.exe"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "FinResearch-Setup-${version}.${ext}",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "FinResearch 金融研究与尽调辅助软件"
+    }
   }
 }
