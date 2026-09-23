@@ -16,11 +16,16 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from . import __version__
+from .api import router as api_router
+from .db import init_db
 
 app = FastAPI(title="FinEngine", version=__version__)
+app.include_router(api_router)
 
 # 模块级令牌：serve() 启动时生成，通过 ready 行告知调用方
 TOKEN = secrets.token_hex(16)
+
+init_db()  # 启动时确保数据库表就绪
 
 
 @app.middleware("http")

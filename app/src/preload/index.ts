@@ -3,5 +3,16 @@ import { contextBridge, ipcRenderer } from 'electron'
 // 界面只通过这个桥与主进程/引擎通信（不直接接触引擎端口与令牌）
 contextBridge.exposeInMainWorld('finengine', {
   health: (): Promise<unknown> => ipcRenderer.invoke('engine:health'),
-  info: (): Promise<unknown> => ipcRenderer.invoke('engine:info')
+  info: (): Promise<unknown> => ipcRenderer.invoke('engine:info'),
+  // M2：项目/文件管理
+  listProjects: (): Promise<unknown> => ipcRenderer.invoke('engine:projects:list'),
+  createProject: (payload: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('engine:projects:create', payload),
+  getProject: (id: number): Promise<unknown> => ipcRenderer.invoke('engine:projects:get', id),
+  deleteProject: (id: number): Promise<unknown> => ipcRenderer.invoke('engine:projects:delete', id),
+  uploadFiles: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:files:upload', projectId),
+  getFile: (id: number): Promise<unknown> => ipcRenderer.invoke('engine:files:get', id),
+  getIndicators: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:indicators:get', projectId)
 })

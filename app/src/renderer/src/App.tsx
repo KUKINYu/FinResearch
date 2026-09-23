@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
+import ProjectsView from './views/ProjectsView'
 
-// 五个工作区（对应产品需求）：P0 各里程碑逐步填充
+// 五个工作区（对应产品需求）：M2 上线项目档案，其余里程碑逐步填充
 const WORKSPACES = ['项目档案', '财务指标', '异常发现', '全文搜索', 'AI 问答'] as const
 type Workspace = (typeof WORKSPACES)[number]
 
-const PLACEHOLDER: Record<Workspace, string> = {
-  项目档案: '创建尽调项目、上传招股书/年报/研报（M2 里程碑上线）',
+const PLACEHOLDER: Partial<Record<Workspace, string>> = {
   财务指标: '10 项核心财务指标卡片与历年趋势图（M4 里程碑上线）',
   异常发现: '财务异常自动检测，每条异常溯源到原文页码（M5 里程碑上线）',
   全文搜索: '跨文件全文搜索，结果带页码与摘录（M6 里程碑上线）',
@@ -53,8 +53,14 @@ export default function App(): React.JSX.Element {
           ))}
         </nav>
         <main className="content">
-          <h2>{active}</h2>
-          <p className="placeholder">{PLACEHOLDER[active]}</p>
+          {active === '项目档案' ? (
+            <ProjectsView />
+          ) : (
+            <>
+              <h2>{active}</h2>
+              <p className="placeholder">{PLACEHOLDER[active]}</p>
+            </>
+          )}
         </main>
       </div>
     </div>

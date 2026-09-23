@@ -142,3 +142,273 @@ body {
   color: var(--text-muted);
   line-height: 1.8;
 }
+
+/* ---- 按钮 ---- */
+.btn {
+  border: 1px solid var(--gray-border);
+  background: #fff;
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn:hover {
+  border-color: var(--blue);
+  color: var(--navy);
+}
+
+.btn-primary {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 12px;
+}
+
+/* ---- 项目档案工作区 ---- */
+.projects-view {
+  display: flex;
+  gap: 20px;
+  height: 100%;
+  min-height: 0;
+}
+
+.project-pane {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 14px;
+  min-height: 0;
+}
+
+.pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.pane-header h3 {
+  font-size: 15px;
+  color: var(--navy);
+  margin: 0;
+}
+
+.pane-header h4 {
+  font-size: 14px;
+  color: var(--navy);
+  margin: 0;
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: var(--gray-bg);
+  border-radius: 6px;
+}
+
+.create-form input {
+  padding: 7px 10px;
+  border: 1px solid var(--gray-border);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.project-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.project-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.project-item:hover {
+  background: var(--gray-bg);
+}
+
+.project-item.active {
+  background: var(--blue-light);
+  border-left: 3px solid var(--navy);
+}
+
+.project-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.project-company {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.project-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 12px;
+}
+
+.project-detail {
+  flex: 1;
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 18px 20px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-header h3 {
+  font-size: 17px;
+  color: var(--navy);
+  margin: 0;
+}
+
+.detail-company {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 6px 0 16px;
+}
+
+.files-section {
+  margin-top: 8px;
+}
+
+.file-list {
+  list-style: none;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.file-type-badge {
+  background: var(--blue-light);
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 13px;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.file-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.file-error {
+  font-size: 11px;
+  color: #b91c1c;
+  margin-top: 2px;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.status-ready {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.status-parsing,
+.status-uploaded {
+  background: var(--blue-light);
+  color: var(--navy);
+}
+
+.status-failed {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.progress-bar {
+  height: 4px;
+  background: var(--gray-border);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--blue);
+  transition: width 0.5s;
+}
+
+.file-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 14px 8px;
+  line-height: 1.7;
+}
+
+.indicator-preview {
+  margin-top: 18px;
+}
+
+.indicator-preview h4 {
+  font-size: 14px;
+  color: var(--navy);
+  margin: 0 0 6px;
+}

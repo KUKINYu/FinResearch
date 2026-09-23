@@ -1,3 +1,8 @@
-# 引擎依赖（Spike A 最小集，后续里程碑追加解析/OCR/向量库）
+# 引擎依赖（运行期；开发测试依赖见 requirements-dev.txt）
 fastapi>=0.110
 uvicorn>=0.29
+sqlalchemy>=2.0
+python-multipart>=0.0.9
+pdfplumber>=0.11
+fastembed>=0.4
+numpy>=1.26

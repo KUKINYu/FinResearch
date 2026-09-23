@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { join } from 'node:path'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 // 引擎握手信息：解析引擎 stdout 的 ready 行得到
 let engine = { port: 0, token: '' }
@@ -54,9 +54,17 @@ function startEngine(): Promise<{ port: number; token: string }> {
 }
 
 /** 调用引擎 API（界面不直接接触端口/令牌，统一走主进程） */
-async function engineRequest(path: string): Promise<unknown> {
+async function engineRequest(
+  path: string,
+  options?: { method?: string; body?: unknown }
+): Promise<unknown> {
   const res = await fetch(`http://127.0.0.1:${engine.port}${path}`, {
-    headers: { 'X-FinEngine-Token': engine.token }
+    method: options?.method ?? 'GET',
+    headers: {
+      'X-FinEngine-Token': engine.token,
+      ...(options?.body !== undefined ? { 'Content-Type': 'application/json' } : {})
+    },
+    body: options?.body !== undefined ? JSON.stringify(options.body) : undefined
   })
   if (!res.ok) throw new Error(`引擎请求失败（HTTP ${res.status}）`)
   return res.json()
@@ -108,6 +116,46 @@ app.whenReady().then(async () => {
     } catch {
       return null
     }
+  })
+
+  // ---- M2：项目/文件管理 ----
+  ipcMain.handle('engine:projects:list', () => engineRequest('/api/projects'))
+  ipcMain.handle('engine:projects:create', (_e, payload: unknown) =>
+    engineRequest('/api/projects', { method: 'POST', body: payload })
+  )
+  ipcMain.handle('engine:projects:get', (_e, id: number) => engineRequest(`/api/projects/${id}`))
+  ipcMain.handle('engine:projects:delete', (_e, id: number) =>
+    engineRequest(`/api/projects/${id}`, { method: 'DELETE' })
+  )
+  ipcMain.handle('engine:files:get', (_e, id: number) => engineRequest(`/api/files/${id}`))
+  ipcMain.handle('engine:indicators:get', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/indicators`)
+  )
+  ipcMain.handle('engine:files:upload', async (_e, projectId: number) => {
+    const result = await dialog.showOpenDialog({
+      title: '选择要上传的资料（PDF / Excel）',
+      properties: ['openFile', 'multiSelections'],
+      filters: [
+        { name: '金融文档', extensions: ['pdf', 'xlsx', 'xls'] },
+        { name: '所有文件', extensions: ['*'] }
+      ]
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    const uploaded = []
+    for (const filePath of result.filePaths) {
+      const name = filePath.split(/[\\/]/).pop() || '未命名文件'
+      const buffer = readFileSync(filePath)
+      const form = new FormData()
+      form.append('file', new Blob([buffer]), name)
+      const res = await fetch(`http://127.0.0.1:${engine.port}/api/projects/${projectId}/files`, {
+        method: 'POST',
+        headers: { 'X-FinEngine-Token': engine.token },
+        body: form
+      })
+      if (!res.ok) throw new Error(`上传失败（HTTP ${res.status}）`)
+      uploaded.push(await res.json())
+    }
+    return uploaded
   })
 
   createWindow()
