@@ -37,5 +37,18 @@ contextBridge.exposeInMainWorld('finengine', {
   saveAISettings: (payload: unknown): Promise<unknown> =>
     ipcRenderer.invoke('engine:ai:settings:save', payload),
   chatProject: (projectId: number, question: string): Promise<unknown> =>
-    ipcRenderer.invoke('engine:ai:chat', projectId, question)
+    ipcRenderer.invoke('engine:ai:chat', projectId, question),
+  // P1：同行对比
+  searchStocks: (q: string): Promise<unknown> => ipcRenderer.invoke('engine:market:search', q),
+  getComparables: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:comparables:get', projectId),
+  addComparable: (projectId: number, payload: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('engine:comparables:add', projectId, payload),
+  removeComparable: (projectId: number, comparableId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:comparables:remove', projectId, comparableId),
+  getComparison: (projectId: number, refresh: boolean): Promise<unknown> =>
+    ipcRenderer.invoke('engine:comparison:get', projectId, refresh),
+  // P1：导出
+  exportFile: (projectId: number, type: string): Promise<string | null> =>
+    ipcRenderer.invoke('engine:export:save', projectId, type)
 })

@@ -405,3 +405,162 @@ def chat_project(project_id: int, body: ChatIn, session: Session = Depends(get_s
     if len(question) < 2:
         return {"ok": False, "error": "问题太短"}
     return answer_question(project_id, question)
+
+
+# ---------- 同行对比（P1） ----------
+
+@router.get("/market/search")
+def market_search(q: str):
+    from .market import search_stocks
+
+    return {"results": search_stocks(q)}
+
+
+class ComparableIn(BaseModel):
+    code: str
+    name: str
+
+
+@router.get("/projects/{project_id}/comparables")
+def get_comparables(project_id: int, session: Session = Depends(get_session)):
+    from .db.models import Comparable
+
+    rows = session.execute(
+        select(Comparable).where(Comparable.project_id == project_id).order_by(Comparable.id)
+    ).scalars().all()
+    return [{"id": r.id, "code": r.code, "name": r.name} for r in rows]
+
+
+@router.post("/projects/{project_id}/comparables")
+def add_comparable(project_id: int, body: ComparableIn, session: Session = Depends(get_session)):
+    from .db.models import Comparable
+
+    p = session.get(Project, project_id)
+    if p is None:
+        raise HTTPException(404, "项目不存在")
+    exists = session.execute(
+        select(Comparable).where(Comparable.project_id == project_id, Comparable.code == body.code)
+    ).scalar_one_or_none()
+    if exists:
+        return {"ok": True, "existed": True}
+    session.add(Comparable(project_id=project_id, code=body.code, name=body.name))
+    session.commit()
+    return {"ok": True}
+
+
+@router.delete("/projects/{project_id}/comparables/{comparable_id}")
+def remove_comparable(project_id: int, comparable_id: int, session: Session = Depends(get_session)):
+    from .db.models import Comparable
+
+    c = session.get(Comparable, comparable_id)
+    if c is None or c.project_id != project_id:
+        raise HTTPException(404, "可比公司不存在")
+    session.delete(c)
+    session.commit()
+    return {"ok": True}
+
+
+@router.get("/projects/{project_id}/comparison")
+def get_comparison(project_id: int, refresh: int = 0, session: Session = Depends(get_session)):
+    from .db.models import Comparable
+    from .market import get_comparison as fetch_comparison
+
+    rows = session.execute(
+        select(Comparable).where(Comparable.project_id == project_id).order_by(Comparable.id)
+    ).scalars().all()
+    names = {r.code: r.name for r in rows}
+    if not rows:
+        return {"companies": [], "note": "尚未添加可比公司"}
+    result = fetch_comparison([r.code for r in rows], refresh=bool(refresh))
+    for c in result["companies"]:
+        c["name"] = names.get(c["code"], c["code"])
+    return result
+
+
+# ---------- 成果导出（P1） ----------
+
+def _project_dict(p: Project) -> dict:
+    return {
+        "name": p.name,
+        "company_name": p.company_name,
+        "company_code": p.company_code,
+    }
+
+
+@router.get("/projects/{project_id}/export/anomalies")
+def export_anomalies(project_id: int, session: Session = Depends(get_session)):
+    from .export import export_anomalies_docx
+
+    p = session.get(Project, project_id)
+    if p is None:
+        raise HTTPException(404, "项目不存在")
+    anomalies = [
+        {
+            "title": a.title,
+            "severity": a.severity,
+            "description": a.description,
+            "data_points": json.loads(a.data_json) if a.data_json else [],
+        }
+        for a in session.execute(
+            select(Anomaly).where(Anomaly.project_id == project_id).order_by(Anomaly.severity.desc())
+        ).scalars()
+    ]
+    content = export_anomalies_docx(_project_dict(p), anomalies)
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": 'attachment; filename="异常清单.docx"'},
+    )
+
+
+@router.get("/projects/{project_id}/export/indicators")
+def export_indicators(project_id: int, session: Session = Depends(get_session)):
+    from .export import export_indicators_docx
+
+    p = session.get(Project, project_id)
+    if p is None:
+        raise HTTPException(404, "项目不存在")
+    indicators = [
+        {
+            "name": r.name,
+            "period": r.period,
+            "value": r.value,
+            "unit": r.unit,
+            "source_page": r.source_page,
+        }
+        for r in session.execute(
+            select(Indicator).where(Indicator.project_id == project_id)
+        ).scalars()
+    ]
+    content = export_indicators_docx(_project_dict(p), indicators)
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": 'attachment; filename="财务指标表.docx"'},
+    )
+
+
+@router.get("/projects/{project_id}/export/comparison")
+def export_comparison(project_id: int, session: Session = Depends(get_session)):
+    from .db.models import Comparable
+    from .export import export_comparison_xlsx
+    from .market import get_comparison as fetch_comparison
+
+    p = session.get(Project, project_id)
+    if p is None:
+        raise HTTPException(404, "项目不存在")
+    rows = session.execute(
+        select(Comparable).where(Comparable.project_id == project_id)
+    ).scalars().all()
+    if not rows:
+        raise HTTPException(400, "尚未添加可比公司")
+    result = fetch_comparison([r.code for r in rows])
+    names = {r.code: r.name for r in rows}
+    for c in result["companies"]:
+        c["name"] = names.get(c["code"], c["code"])
+    content = export_comparison_xlsx(result["companies"], result.get("note", ""))
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="同行对比.xlsx"'},
+    )

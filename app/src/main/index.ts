@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { join } from 'node:path'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
 // 引擎握手信息：解析引擎 stdout 的 ready 行得到
 let engine = { port: 0, token: '' }
@@ -165,6 +165,49 @@ app.whenReady().then(async () => {
   )
   ipcMain.handle('engine:ai:chat', (_e, projectId: number, question: string) =>
     engineRequest(`/api/projects/${projectId}/chat`, { method: 'POST', body: { question } })
+  )
+  // P1：同行对比
+  ipcMain.handle('engine:market:search', (_e, q: string) =>
+    engineRequest(`/api/market/search?q=${encodeURIComponent(q)}`)
+  )
+  ipcMain.handle('engine:comparables:get', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/comparables`)
+  )
+  ipcMain.handle('engine:comparables:add', (_e, projectId: number, payload: unknown) =>
+    engineRequest(`/api/projects/${projectId}/comparables`, { method: 'POST', body: payload })
+  )
+  ipcMain.handle('engine:comparables:remove', (_e, projectId: number, comparableId: number) =>
+    engineRequest(`/api/projects/${projectId}/comparables/${comparableId}`, { method: 'DELETE' })
+  )
+  ipcMain.handle('engine:comparison:get', (_e, projectId: number, refresh: boolean) =>
+    engineRequest(`/api/projects/${projectId}/comparison?refresh=${refresh ? 1 : 0}`)
+  )
+  // P1：成果导出（引擎生成文件 → 保存对话框 → 写盘）
+  ipcMain.handle(
+    'engine:export:save',
+    async (_e, projectId: number, type: 'anomalies' | 'indicators' | 'comparison') => {
+      const names: Record<string, string> = {
+        anomalies: '异常清单.docx',
+        indicators: '财务指标表.docx',
+        comparison: '同行对比.xlsx'
+      }
+      const res = await fetch(
+        `http://127.0.0.1:${engine.port}/api/projects/${projectId}/export/${type}`,
+        { headers: { 'X-FinEngine-Token': engine.token } }
+      )
+      if (!res.ok) throw new Error(`导出失败（HTTP ${res.status}）`)
+      const buffer = Buffer.from(await res.arrayBuffer())
+      const result = await dialog.showSaveDialog({
+        title: '导出文件',
+        defaultPath: names[type],
+        filters: [
+          { name: '文档', extensions: [type === 'comparison' ? 'xlsx' : 'docx'] }
+        ]
+      })
+      if (result.canceled || !result.filePath) return null
+      writeFileSync(result.filePath, buffer)
+      return result.filePath
+    }
   )
   ipcMain.handle('engine:files:upload', async (_e, projectId: number) => {
     const result = await dialog.showOpenDialog({

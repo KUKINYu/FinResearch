@@ -176,6 +176,20 @@ export default function IndicatorsView({
         <p className="placeholder">
           提取结果自动生成，建议逐项核对：每条数据可点「出处」跳回原文验证；双击数值可修正；悬停单元格可删除错误数据（如混入的子公司数据）。
         </p>
+        {indicators.length > 0 && (
+          <button
+            className="btn btn-sm"
+            onClick={async () => {
+              try {
+                await window.finengine.exportFile(projectId, 'indicators')
+              } catch (e) {
+                setError(String(e))
+              }
+            }}
+          >
+            ⬇ 导出指标表（Word）
+          </button>
+        )}
       </div>
       {error && <div className="error-banner">{error}</div>}
       {indicators.length === 0 ? (

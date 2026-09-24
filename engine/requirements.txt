@@ -6,3 +6,12 @@ python-multipart>=0.0.9
 pdfplumber>=0.11
 fastembed>=0.4
 numpy>=1.26
+# AI 网关（M7）
+openai>=1.40
+anthropic>=0.34
+# 同行对比数据源（P1；免费公开数据仅限学术/个人使用，商用前换授权源）
+akshare>=1.14
+pandas>=2.0
+# 成果导出（P1）
+python-docx>=1.1
+openpyxl>=3.1

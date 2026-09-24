@@ -4,9 +4,10 @@ import IndicatorsView from './views/IndicatorsView'
 import AnomaliesView from './views/AnomaliesView'
 import SearchView from './views/SearchView'
 import ChatView from './views/ChatView'
+import ComparisonView from './views/ComparisonView'
 
-// 五个工作区（对应产品需求）：全部上线
-const WORKSPACES = ['项目档案', '财务指标', '异常发现', '全文搜索', 'AI 问答'] as const
+// 六个工作区（P1 新增同行对比）
+const WORKSPACES = ['项目档案', '财务指标', '异常发现', '全文搜索', 'AI 问答', '同行对比'] as const
 type Workspace = (typeof WORKSPACES)[number]
 
 export default function App(): React.JSX.Element {
@@ -58,6 +59,7 @@ export default function App(): React.JSX.Element {
           {active === '异常发现' && <AnomaliesView projectId={selectedProjectId} />}
           {active === '全文搜索' && <SearchView projectId={selectedProjectId} />}
           {active === 'AI 问答' && <ChatView projectId={selectedProjectId} />}
+          {active === '同行对比' && <ComparisonView projectId={selectedProjectId} />}
         </main>
       </div>
     </div>

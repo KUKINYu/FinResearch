@@ -107,9 +107,24 @@ export default function AnomaliesView({
     <div className="anomalies-view">
       <div className="anomalies-header">
         <h2>异常发现</h2>
-        <button className="btn btn-primary btn-sm" onClick={reanalyze} disabled={analyzing}>
-          {analyzing ? '分析中…' : '↻ 重新分析'}
-        </button>
+        <div className="anomalies-actions">
+          <button
+            className="btn btn-sm"
+            onClick={async () => {
+              try {
+                await window.finengine.exportFile(projectId, 'anomalies')
+              } catch (e) {
+                setError(String(e))
+              }
+            }}
+            disabled={anomalies.length === 0}
+          >
+            ⬇ 导出异常清单（Word）
+          </button>
+          <button className="btn btn-primary btn-sm" onClick={reanalyze} disabled={analyzing}>
+            {analyzing ? '分析中…' : '↻ 重新分析'}
+          </button>
+        </div>
       </div>
       <p className="placeholder">
         基于项目财务数据自动检测的异常。每条异常给出计算过程与数据出处，点击数据可跳回原文核对。

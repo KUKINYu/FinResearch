@@ -1,7 +1,17 @@
 """数据库层：SQLAlchemy 2.0 模型与会话管理。"""
 
 from .database import SessionLocal, engine, init_db
-from .models import Anomaly, File, FinancialLine, Indicator, Page, Project, Setting
+from .models import (
+    Anomaly,
+    Comparable,
+    File,
+    FinancialLine,
+    Indicator,
+    MarketCache,
+    Page,
+    Project,
+    Setting,
+)
 
 __all__ = [
     "SessionLocal",
@@ -14,4 +24,6 @@ __all__ = [
     "Indicator",
     "Anomaly",
     "Setting",
+    "Comparable",
+    "MarketCache",
 ]

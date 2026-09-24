@@ -128,3 +128,25 @@ class Setting(Base):
 
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
     value: Mapped[str] = mapped_column(Text, default="")
+
+
+class Comparable(Base):
+    """项目添加的同行业可比公司（P1 同行对比）。"""
+
+    __tablename__ = "comparables"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    code: Mapped[str] = mapped_column(String(20))  # 证券代码，如 601091
+    name: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class MarketCache(Base):
+    """市场数据缓存（行情快照、全市场列表、个股财务，JSON 存储带抓取时间）。"""
+
+    __tablename__ = "market_cache"
+
+    key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    data_json: Mapped[str] = mapped_column(Text, default="")
+    fetched_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)

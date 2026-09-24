@@ -75,6 +75,12 @@ export interface FinEngineBridge {
     api_key?: string
   }): Promise<{ ok: boolean }>
   chatProject(projectId: number, question: string): Promise<unknown>
+  searchStocks(q: string): Promise<{ results: { code: string; name: string }[] }>
+  getComparables(projectId: number): Promise<{ id: number; code: string; name: string }[]>
+  addComparable(projectId: number, payload: { code: string; name: string }): Promise<{ ok: boolean }>
+  removeComparable(projectId: number, comparableId: number): Promise<{ ok: boolean }>
+  getComparison(projectId: number, refresh: boolean): Promise<unknown>
+  exportFile(projectId: number, type: 'anomalies' | 'indicators' | 'comparison'): Promise<string | null>
 }
 
 declare global {
