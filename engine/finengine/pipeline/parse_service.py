@@ -100,6 +100,10 @@ def _parse_pdf(file_id: int, path: Path) -> None:
         with SessionLocal() as session:
             f = session.get(File, file_id)
             f.page_count = total
+            # 重复解析：先清掉该文件的旧页面，避免翻倍
+            old_pages = session.execute(select(Page).where(Page.file_id == file_id)).scalars().all()
+            for p in old_pages:
+                session.delete(p)
             session.commit()
         for i, page in enumerate(pdf.pages, start=1):
             text = page.extract_text() or ""
@@ -116,7 +120,7 @@ def _parse_pdf(file_id: int, path: Path) -> None:
         session.commit()
     _extract_financials(file_id, path)
 
-    # 异常检测（M5：解析完成后自动跑规则引擎）
+    # 异常检测（M5：解析完成后自动跑规则引擎）+ 搜索索引（M6）
     with SessionLocal() as session:
         f = session.get(File, file_id)
         f.parse_progress = 97
@@ -127,6 +131,12 @@ def _parse_pdf(file_id: int, path: Path) -> None:
             analyze_project(f.project_id, session)
         except Exception as e:  # noqa: BLE001 规则失败不阻塞解析完成
             print(f"[finengine] 异常检测失败：{e}")
+        try:
+            from ..search.fts import build_index
+
+            build_index()
+        except Exception as e:  # noqa: BLE001
+            print(f"[finengine] 搜索索引失败：{e}")
 
     with SessionLocal() as session:
         f = session.get(File, file_id)

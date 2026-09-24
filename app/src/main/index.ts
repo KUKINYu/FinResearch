@@ -153,6 +153,10 @@ app.whenReady().then(async () => {
   ipcMain.handle('engine:analyze', (_e, projectId: number) =>
     engineRequest(`/api/projects/${projectId}/analyze`, { method: 'POST' })
   )
+  // M6：全文搜索
+  ipcMain.handle('engine:search', (_e, projectId: number, query: string) =>
+    engineRequest(`/api/projects/${projectId}/search`, { method: 'POST', body: { query } })
+  )
   ipcMain.handle('engine:files:upload', async (_e, projectId: number) => {
     const result = await dialog.showOpenDialog({
       title: '选择要上传的资料（PDF / Excel）',

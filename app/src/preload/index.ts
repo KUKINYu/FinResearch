@@ -27,5 +27,8 @@ contextBridge.exposeInMainWorld('finengine', {
   getAnomalies: (projectId: number): Promise<unknown> =>
     ipcRenderer.invoke('engine:anomalies:get', projectId),
   analyzeProject: (projectId: number): Promise<unknown> =>
-    ipcRenderer.invoke('engine:analyze', projectId)
+    ipcRenderer.invoke('engine:analyze', projectId),
+  // M6：全文搜索
+  searchProject: (projectId: number, query: string): Promise<unknown> =>
+    ipcRenderer.invoke('engine:search', projectId, query)
 })

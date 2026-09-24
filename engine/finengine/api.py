@@ -300,3 +300,37 @@ def get_anomalies(project_id: int, session: Session = Depends(get_session)):
         }
         for r in rows
     ]
+
+
+# ---------- 全文搜索（M6） ----------
+
+class SearchIn(BaseModel):
+    query: str
+    file_id: int | None = None
+
+
+@router.post("/projects/{project_id}/search")
+def search_project(project_id: int, body: SearchIn, session: Session = Depends(get_session)):
+    from .search.fts import search as fts_search
+
+    q = (body.query or "").strip()
+    if len(q) < 2:
+        return {"results": []}
+    file_ids: list[int] = []
+    if body.file_id is not None:
+        file_ids = [body.file_id]
+    else:
+        file_ids = [
+            f.id for f in session.execute(select(File).where(File.project_id == project_id)).scalars()
+        ]
+    if not file_ids:
+        return {"results": []}
+    results = fts_search(file_ids, q)
+    # 补文件名（界面显示）
+    names = {
+        f.id: f.original_name
+        for f in session.execute(select(File).where(File.id.in_(file_ids))).scalars()
+    }
+    for r in results:
+        r["file_name"] = names.get(r["file_id"], "")
+    return {"results": results}

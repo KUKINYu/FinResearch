@@ -64,6 +64,7 @@ export interface FinEngineBridge {
   deleteIndicator(id: number): Promise<{ ok: boolean }>
   getAnomalies(projectId: number): Promise<unknown[]>
   analyzeProject(projectId: number): Promise<{ anomalies: unknown[] }>
+  searchProject(projectId: number, query: string): Promise<{ results: unknown[] }>
 }
 
 declare global {

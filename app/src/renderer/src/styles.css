@@ -668,6 +668,88 @@ body {
   background: var(--blue-light);
 }
 
+/* ---- M6 全文搜索 ---- */
+.search-view h2 {
+  font-size: 18px;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.search-bar input {
+  flex: 1;
+  max-width: 480px;
+  padding: 9px 14px;
+  border: 1px solid var(--gray-border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.result-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.result-list {
+  list-style: none;
+}
+
+.result-item {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.result-item:hover {
+  border-color: var(--blue);
+  box-shadow: 0 1px 6px rgba(27, 58, 107, 0.08);
+}
+
+.result-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.result-page {
+  background: var(--blue-light);
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.result-file {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-snippet {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  word-break: break-all;
+}
+
 /* ---- PDF 阅读器（原文核对弹窗） ---- */
 .viewer-overlay {
   position: fixed;
