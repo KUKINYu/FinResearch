@@ -157,6 +157,15 @@ app.whenReady().then(async () => {
   ipcMain.handle('engine:search', (_e, projectId: number, query: string) =>
     engineRequest(`/api/projects/${projectId}/search`, { method: 'POST', body: { query } })
   )
+  // M7：AI 问答（BYOK）
+  ipcMain.handle('engine:ai:providers', () => engineRequest('/api/ai/providers'))
+  ipcMain.handle('engine:ai:settings:get', () => engineRequest('/api/settings/ai'))
+  ipcMain.handle('engine:ai:settings:save', (_e, payload: unknown) =>
+    engineRequest('/api/settings/ai', { method: 'POST', body: payload })
+  )
+  ipcMain.handle('engine:ai:chat', (_e, projectId: number, question: string) =>
+    engineRequest(`/api/projects/${projectId}/chat`, { method: 'POST', body: { question } })
+  )
   ipcMain.handle('engine:files:upload', async (_e, projectId: number) => {
     const result = await dialog.showOpenDialog({
       title: '选择要上传的资料（PDF / Excel）',

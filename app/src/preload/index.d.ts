@@ -65,6 +65,16 @@ export interface FinEngineBridge {
   getAnomalies(projectId: number): Promise<unknown[]>
   analyzeProject(projectId: number): Promise<{ anomalies: unknown[] }>
   searchProject(projectId: number, query: string): Promise<{ results: unknown[] }>
+  getAIProviders(): Promise<
+    { id: string; name: string; default_model: string; register_url: string }[]
+  >
+  getAISettings(): Promise<{ provider: string; model: string; has_key: boolean }>
+  saveAISettings(payload: {
+    provider: string
+    model?: string
+    api_key?: string
+  }): Promise<{ ok: boolean }>
+  chatProject(projectId: number, question: string): Promise<unknown>
 }
 
 declare global {

@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .db import SessionLocal
-from .db.models import Anomaly, File, FinancialLine, Indicator, Page, Project
+from .db.models import Anomaly, File, FinancialLine, Indicator, Page, Project, Setting
 from .pipeline import create_file_record, start_parse
 from .pipeline.parse_service import project_files_dir
 
@@ -334,3 +334,74 @@ def search_project(project_id: int, body: SearchIn, session: Session = Depends(g
     for r in results:
         r["file_name"] = names.get(r["file_id"], "")
     return {"results": results}
+
+
+# ---------- AI 设置与问答（M7，BYOK） ----------
+
+class AISettingsIn(BaseModel):
+    provider: str
+    model: str | None = None
+    api_key: str | None = None  # 留空 = 不修改已存的 Key
+
+
+@router.get("/ai/providers")
+def get_providers():
+    from .ai.gateway import PROVIDERS
+
+    return [
+        {"id": k, "name": v["name"], "default_model": v["default_model"], "register_url": v["register_url"]}
+        for k, v in PROVIDERS.items()
+    ]
+
+
+@router.get("/settings/ai")
+def get_ai_settings(session: Session = Depends(get_session)):
+    kv = {s.key: s.value for s in session.execute(select(Setting)).scalars()}
+    return {
+        "provider": kv.get("ai.provider", ""),
+        "model": kv.get("ai.model", ""),
+        "has_key": bool(kv.get("ai.api_key", "")),
+    }
+
+
+@router.post("/settings/ai")
+def save_ai_settings(body: AISettingsIn, session: Session = Depends(get_session)):
+    from .ai.security import encrypt
+
+    def upsert(key: str, value: str) -> None:
+        s = session.get(Setting, key)
+        if s is None:
+            session.add(Setting(key=key, value=value))
+        else:
+            s.value = value
+
+    if body.provider:
+        upsert("ai.provider", body.provider)
+        # 换服务商时清掉旧模型，让新服务商用默认模型
+        if body.model:
+            upsert("ai.model", body.model)
+        else:
+            s = session.get(Setting, "ai.model")
+            if s:
+                s.value = ""
+    if body.api_key:
+        upsert("ai.api_key", encrypt(body.api_key))
+    session.commit()
+    return {"ok": True}
+
+
+class ChatIn(BaseModel):
+    question: str
+
+
+@router.post("/projects/{project_id}/chat")
+def chat_project(project_id: int, body: ChatIn, session: Session = Depends(get_session)):
+    from .ai.qa import answer_question
+
+    p = session.get(Project, project_id)
+    if p is None:
+        raise HTTPException(404, "项目不存在")
+    question = (body.question or "").strip()
+    if len(question) < 2:
+        return {"ok": False, "error": "问题太短"}
+    return answer_question(project_id, question)

@@ -30,5 +30,12 @@ contextBridge.exposeInMainWorld('finengine', {
     ipcRenderer.invoke('engine:analyze', projectId),
   // M6：全文搜索
   searchProject: (projectId: number, query: string): Promise<unknown> =>
-    ipcRenderer.invoke('engine:search', projectId, query)
+    ipcRenderer.invoke('engine:search', projectId, query),
+  // M7：AI 问答
+  getAIProviders: (): Promise<unknown> => ipcRenderer.invoke('engine:ai:providers'),
+  getAISettings: (): Promise<unknown> => ipcRenderer.invoke('engine:ai:settings:get'),
+  saveAISettings: (payload: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('engine:ai:settings:save', payload),
+  chatProject: (projectId: number, question: string): Promise<unknown> =>
+    ipcRenderer.invoke('engine:ai:chat', projectId, question)
 })

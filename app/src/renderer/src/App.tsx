@@ -3,14 +3,11 @@ import ProjectsView from './views/ProjectsView'
 import IndicatorsView from './views/IndicatorsView'
 import AnomaliesView from './views/AnomaliesView'
 import SearchView from './views/SearchView'
+import ChatView from './views/ChatView'
 
-// 五个工作区（对应产品需求）：M2 项目档案、M3 财务指标、M5 异常发现、M6 全文搜索
+// 五个工作区（对应产品需求）：全部上线
 const WORKSPACES = ['项目档案', '财务指标', '异常发现', '全文搜索', 'AI 问答'] as const
 type Workspace = (typeof WORKSPACES)[number]
-
-const PLACEHOLDER: Partial<Record<Workspace, string>> = {
-  'AI 问答': '基于上传资料的 AI 辅助分析，回答带出处、不编造（M7 里程碑上线）'
-}
 
 export default function App(): React.JSX.Element {
   const [active, setActive] = useState<Workspace>('项目档案')
@@ -60,12 +57,7 @@ export default function App(): React.JSX.Element {
           {active === '财务指标' && <IndicatorsView projectId={selectedProjectId} />}
           {active === '异常发现' && <AnomaliesView projectId={selectedProjectId} />}
           {active === '全文搜索' && <SearchView projectId={selectedProjectId} />}
-          {active !== '项目档案' && active !== '财务指标' && active !== '异常发现' && active !== '全文搜索' && (
-            <>
-              <h2>{active}</h2>
-              <p className="placeholder">{PLACEHOLDER[active]}</p>
-            </>
-          )}
+          {active === 'AI 问答' && <ChatView projectId={selectedProjectId} />}
         </main>
       </div>
     </div>

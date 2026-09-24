@@ -32,6 +32,7 @@ class SearchHit:
     page: int
     para_idx: int
     score: float
+    file_id: int | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -40,6 +41,7 @@ class SearchHit:
             "page": self.page,
             "para_idx": self.para_idx,
             "score": round(float(self.score), 4),
+            "file_id": self.file_id,
         }
 
 
@@ -76,14 +78,23 @@ class DocumentRetriever:
 
     def __init__(self, file_name: str, model_name: str = "BAAI/bge-small-zh-v1.5"):
         self.file_name = file_name
-        self.model = TextEmbedding(model_name=model_name)
+        # 模型缓存放用户数据目录（固定位置，避免系统临时目录被清理后重新下载）
+        from ..config import cache_dir
+
+        model_cache = cache_dir() / "models"
+        model_cache.mkdir(parents=True, exist_ok=True)
+        self.model = TextEmbedding(model_name=model_name, cache_dir=str(model_cache))
         self.texts: list[str] = []
         self.metas: list[dict] = []
         self.embeddings: np.ndarray | None = None
 
-    def add_page(self, page_no: int, text: str) -> None:
-        """追加一页的块（先切块收集，索引前再统一向量化）。"""
+    def add_page(self, page_no: int, text: str, file_id: int | None = None) -> None:
+        """追加一页的块（先切块收集，索引前再统一向量化）。
+
+        file_id 用于多文件项目（页码跨文件不冲突）。
+        """
         for chunk, meta in chunk_page(page_no, text, self.file_name):
+            meta["file_id"] = file_id
             self.texts.append(chunk)
             self.metas.append(meta)
 
@@ -113,6 +124,7 @@ class DocumentRetriever:
                 page=self.metas[i]["page"],
                 para_idx=self.metas[i]["para_idx"],
                 score=float(scores[i]),
+                file_id=self.metas[i].get("file_id"),
             )
             for i in idx
         ]
