@@ -22,6 +22,7 @@ export interface FileInfo {
 }
 
 export interface IndicatorInfo {
+  id: number
   name: string
   period: string
   value: number

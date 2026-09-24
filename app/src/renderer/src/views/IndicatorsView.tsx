@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FileInfo, IndicatorInfo } from '../types'
 import PdfViewer from './PdfViewer'
+import TrendChart, { type TrendPoint } from './TrendChart'
 
 // 核心指标的展示顺序（与产品需求一致），其余指标按字母序排在后面
 const CORE_ORDER = [
@@ -50,6 +51,7 @@ export default function IndicatorsView({
   const [editing, setEditing] = useState<{ id: number; draft: string } | null>(null)
   const [viewer, setViewer] = useState<ViewerState | null>(null)
   const [loadingViewer, setLoadingViewer] = useState(false)
+  const [chartIndicator, setChartIndicator] = useState<string>('营业收入')
   const [error, setError] = useState('')
 
   const load = useCallback(async (): Promise<void> => {
@@ -87,6 +89,21 @@ export default function IndicatorsView({
     () => sortPeriods([...new Set(indicators.map((i) => i.period))]),
     [indicators]
   )
+
+  // 趋势图数据：仅取整年期间（1-6月与年度混画会误导）
+  const chartData = useMemo<TrendPoint[]>(() => {
+    const fullYears = sortPeriods(periods).filter((p) => p.endsWith('年度'))
+    const byPeriod = new Map(periods.map((p) => [p, p]))
+    void byPeriod
+    return fullYears
+      .map((period) => {
+        const ind = (rows.byName.get(chartIndicator) ?? []).find((i) => i.period === period)
+        if (!ind) return null
+        // 不同单位（如元 vs 万元）混在一条线上会误导，过滤非主流单位
+        return { period, value: ind.value, unit: ind.unit }
+      })
+      .filter((d): d is TrendPoint => d !== null)
+  }, [rows, periods, chartIndicator])
 
   const saveEdit = async (id: number): Promise<void> => {
     if (!editing) return
@@ -164,7 +181,28 @@ export default function IndicatorsView({
       {indicators.length === 0 ? (
         <p className="placeholder">还没有财务数据。请在「项目档案」中上传招股书或年报，解析完成后这里会出现指标表。</p>
       ) : (
-        <div className="indicator-table-wrap">
+        <>
+          <div className="chart-panel">
+            <div className="chart-indicator-select">
+              <span>趋势图：</span>
+              <select
+                value={chartIndicator}
+                onChange={(e) => setChartIndicator(e.target.value)}
+              >
+                {rows.ordered.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {chartData.length >= 2 ? (
+              <TrendChart indicatorName={chartIndicator} data={chartData} />
+            ) : (
+              <p className="placeholder">该指标整年数据不足两个期间，暂无法绘制趋势。</p>
+            )}
+          </div>
+          <div className="indicator-table-wrap">
           <table className="indicator-table">
             <thead>
               <tr>
@@ -176,7 +214,7 @@ export default function IndicatorsView({
             </thead>
             <tbody>
               {rows.ordered.map((name) => (
-                <tr key={name}>
+                <tr key={name} onClick={() => setChartIndicator(name)} className="clickable-row">
                   <td className="col-indicator">
                     {name}
                     {(rows.byName.get(name) ?? []).some((i) => i.derived) && (
@@ -238,7 +276,8 @@ export default function IndicatorsView({
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
       {viewer && (

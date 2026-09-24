@@ -529,6 +529,39 @@ body {
   font-size: 11px;
 }
 
+/* ---- M4 趋势图 ---- */
+.chart-panel {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.chart-indicator-select {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.chart-indicator-select select {
+  padding: 5px 10px;
+  border: 1px solid var(--gray-border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--navy);
+  background: #fff;
+}
+
+.trend-chart {
+  width: 100%;
+  height: 300px;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
 /* ---- PDF 阅读器（原文核对弹窗） ---- */
 .viewer-overlay {
   position: fixed;
