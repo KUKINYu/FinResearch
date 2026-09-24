@@ -1,4 +1,4 @@
-"""规则引擎测试（合成序列，覆盖触发与不触发边界）。"""
+"""规则引擎测试（合成序列，覆盖触发与不触发边界；P1：阈值与开关）。"""
 
 from finengine.rules import run_rules
 from finengine.rules.engine import Point
@@ -108,3 +108,38 @@ def test_debt_ratio_change():
     }
     anomalies = run_rules(s)
     assert any("资产负债率" in t for t in titles(anomalies))
+
+
+def test_threshold_override():
+    """阈值可调：增速差 14pp（默认 20）不触发；调到 10 后触发。"""
+    s = {
+        **series_of("应收账款", {2024: 1000, 2025: 1160}),  # +16%
+        **series_of("营业收入", {2024: 5000, 2025: 5100}),  # +2%
+    }
+    assert all(a["rule_id"] != "ar_vs_revenue_growth" for a in run_rules(s))
+    with_override = run_rules(
+        s,
+        {"ar_vs_revenue_growth": {"enabled": True, "params": {"diff_pp": 10.0}}},
+    )
+    assert any(a["rule_id"] == "ar_vs_revenue_growth" for a in with_override)
+
+
+def test_rule_disable():
+    """规则可关闭。"""
+    s = {
+        **series_of("应收账款", {2024: 1000, 2025: 1500}),
+        **series_of("营业收入", {2024: 5000, 2025: 5100}),
+    }
+    assert any(a["rule_id"] == "ar_vs_revenue_growth" for a in run_rules(s))
+    disabled = run_rules(s, {"ar_vs_revenue_growth": {"enabled": False}})
+    assert all(a["rule_id"] != "ar_vs_revenue_growth" for a in disabled)
+
+
+def test_describe_rules_has_params():
+    from finengine.rules.engine import describe_rules
+
+    rules = describe_rules()
+    assert len(rules) >= 10
+    ar_rule = next(r for r in rules if r["rule_id"] == "ar_vs_revenue_growth")
+    assert ar_rule["params"][0]["name"] == "diff_pp"
+    assert ar_rule["params"][0]["default"] == 20.0

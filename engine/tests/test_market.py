@@ -36,6 +36,11 @@ def test_cache_expired(tmp_path, monkeypatch):
 
     monkeypatch.setattr(config, "data_dir", lambda: tmp_path)
     with SessionLocal() as session:
+        # 幂等：清理历史运行残留
+        old = session.get(MarketCache, "test_key_2")
+        if old:
+            session.delete(old)
+            session.commit()
         session.add(
             MarketCache(
                 key="test_key_2",

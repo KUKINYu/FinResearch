@@ -407,6 +407,27 @@ def chat_project(project_id: int, body: ChatIn, session: Session = Depends(get_s
     return answer_question(project_id, question)
 
 
+# ---------- 规则设置（P1：开关 + 阈值可调） ----------
+
+@router.get("/rules")
+def list_rules():
+    from .rules.engine import describe_rules
+
+    return {"rules": describe_rules()}
+
+
+class RuleSettingsIn(BaseModel):
+    settings: dict[str, dict]  # {rule_id: {enabled: bool, params: {name: value}}}
+
+
+@router.post("/rules")
+def save_rules(body: RuleSettingsIn):
+    from .rules.engine import save_rule_settings
+
+    save_rule_settings(body.settings)
+    return {"ok": True}
+
+
 # ---------- 同行对比（P1） ----------
 
 @router.get("/market/search")

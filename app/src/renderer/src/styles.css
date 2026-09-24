@@ -673,6 +673,71 @@ body {
   background: var(--blue-light);
 }
 
+/* ---- P1 规则设置面板 ---- */
+.rules-panel {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+
+.rules-panel h4 {
+  font-size: 14px;
+  color: var(--navy);
+  margin: 0;
+}
+
+.rules-list {
+  list-style: none;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.rule-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.rule-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  min-width: 280px;
+}
+
+.rule-title {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.rule-params {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rule-param {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rule-param input {
+  width: 72px;
+  padding: 4px 8px;
+  border: 1px solid var(--gray-border);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
 /* ---- M6 全文搜索 ---- */
 .search-view h2 {
   font-size: 18px;

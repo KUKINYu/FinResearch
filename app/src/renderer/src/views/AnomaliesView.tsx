@@ -20,6 +20,14 @@ interface AnomalyInfo {
   data_points: AnomalyPoint[]
 }
 
+interface RuleInfo {
+  rule_id: string
+  title: string
+  severity: string
+  enabled: boolean
+  params: { name: string; label: string; default: number; value: number }[]
+}
+
 const SEVERITY_TEXT: Record<string, string> = { high: '高', medium: '中', low: '低' }
 
 export default function AnomaliesView({
@@ -30,6 +38,8 @@ export default function AnomaliesView({
   const [anomalies, setAnomalies] = useState<AnomalyInfo[]>([])
   const [files, setFiles] = useState<Map<number, string>>(new Map())
   const [analyzing, setAnalyzing] = useState(false)
+  const [rulesOpen, setRulesOpen] = useState(false)
+  const [rules, setRules] = useState<RuleInfo[]>([])
   const [viewer, setViewer] = useState<{
     fileId: number
     fileName: string
@@ -65,6 +75,32 @@ export default function AnomaliesView({
       setError(String(e))
     } finally {
       setAnalyzing(false)
+    }
+  }
+
+  const openRules = async (): Promise<void> => {
+    try {
+      const resp = (await window.finengine.getRules()) as { rules: RuleInfo[] }
+      setRules(resp.rules ?? [])
+      setRulesOpen(true)
+    } catch (e) {
+      setError(String(e))
+    }
+  }
+
+  const saveRules = async (): Promise<void> => {
+    const settings: Record<string, unknown> = {}
+    for (const r of rules) {
+      const params: Record<string, number> = {}
+      for (const p of r.params) params[p.name] = p.value
+      settings[r.rule_id] = { enabled: r.enabled, params }
+    }
+    try {
+      await window.finengine.saveRules(settings)
+      setRulesOpen(false)
+      await reanalyze()
+    } catch (e) {
+      setError(String(e))
     }
   }
 
@@ -121,6 +157,9 @@ export default function AnomaliesView({
           >
             ⬇ 导出异常清单（Word）
           </button>
+          <button className="btn btn-sm" onClick={openRules}>
+            ⚙ 规则设置
+          </button>
           <button className="btn btn-primary btn-sm" onClick={reanalyze} disabled={analyzing}>
             {analyzing ? '分析中…' : '↻ 重新分析'}
           </button>
@@ -128,8 +167,72 @@ export default function AnomaliesView({
       </div>
       <p className="placeholder">
         基于项目财务数据自动检测的异常。每条异常给出计算过程与数据出处，点击数据可跳回原文核对。
+        可在「规则设置」中调整阈值或关闭不关心的规则。
       </p>
       {error && <div className="error-banner">{error}</div>}
+
+      {rulesOpen && (
+        <div className="rules-panel">
+          <div className="pane-header">
+            <h4>异常规则设置</h4>
+            <button className="btn btn-primary btn-sm" onClick={saveRules}>
+              保存并重新分析
+            </button>
+          </div>
+          <ul className="rules-list">
+            {rules.map((r) => (
+              <li key={r.rule_id} className="rule-row">
+                <label className="rule-toggle">
+                  <input
+                    type="checkbox"
+                    checked={r.enabled}
+                    onChange={(e) =>
+                      setRules((prev) =>
+                        prev.map((x) =>
+                          x.rule_id === r.rule_id ? { ...x, enabled: e.target.checked } : x
+                        )
+                      )
+                    }
+                  />
+                  <span className={`severity-badge severity-${r.severity}`}>
+                    {SEVERITY_TEXT[r.severity] ?? r.severity}
+                  </span>
+                  <span className="rule-title">{r.title}</span>
+                </label>
+                <div className="rule-params">
+                  {r.params.map((p) => (
+                    <label key={p.name} className="rule-param">
+                      {p.label}
+                      <input
+                        type="number"
+                        step="any"
+                        value={p.value}
+                        disabled={!r.enabled}
+                        onChange={(e) =>
+                          setRules((prev) =>
+                            prev.map((x) =>
+                              x.rule_id === r.rule_id
+                                ? {
+                                    ...x,
+                                    params: x.params.map((pp) =>
+                                      pp.name === p.name
+                                        ? { ...pp, value: Number(e.target.value) }
+                                        : pp
+                                    )
+                                  }
+                                : x
+                            )
+                          )
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {anomalies.length === 0 ? (
         <p className="placeholder">

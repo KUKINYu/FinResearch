@@ -182,6 +182,11 @@ app.whenReady().then(async () => {
   ipcMain.handle('engine:comparison:get', (_e, projectId: number, refresh: boolean) =>
     engineRequest(`/api/projects/${projectId}/comparison?refresh=${refresh ? 1 : 0}`)
   )
+  // P1：规则设置
+  ipcMain.handle('engine:rules:get', () => engineRequest('/api/rules'))
+  ipcMain.handle('engine:rules:save', (_e, settings: unknown) =>
+    engineRequest('/api/rules', { method: 'POST', body: { settings } })
+  )
   // P1：成果导出（引擎生成文件 → 保存对话框 → 写盘）
   ipcMain.handle(
     'engine:export:save',

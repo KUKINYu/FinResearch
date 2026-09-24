@@ -50,5 +50,8 @@ contextBridge.exposeInMainWorld('finengine', {
     ipcRenderer.invoke('engine:comparison:get', projectId, refresh),
   // P1：导出
   exportFile: (projectId: number, type: string): Promise<string | null> =>
-    ipcRenderer.invoke('engine:export:save', projectId, type)
+    ipcRenderer.invoke('engine:export:save', projectId, type),
+  // P1：规则设置
+  getRules: (): Promise<unknown> => ipcRenderer.invoke('engine:rules:get'),
+  saveRules: (settings: unknown): Promise<unknown> => ipcRenderer.invoke('engine:rules:save', settings)
 })

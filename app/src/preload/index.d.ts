@@ -81,6 +81,16 @@ export interface FinEngineBridge {
   removeComparable(projectId: number, comparableId: number): Promise<{ ok: boolean }>
   getComparison(projectId: number, refresh: boolean): Promise<unknown>
   exportFile(projectId: number, type: 'anomalies' | 'indicators' | 'comparison'): Promise<string | null>
+  getRules(): Promise<{
+    rules: {
+      rule_id: string
+      title: string
+      severity: string
+      enabled: boolean
+      params: { name: string; label: string; default: number; value: number }[]
+    }[]
+  }>
+  saveRules(settings: Record<string, unknown>): Promise<{ ok: boolean }>
 }
 
 declare global {
