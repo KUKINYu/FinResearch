@@ -12,6 +12,7 @@ from finengine.extract.financial_extractor import (
     parse_periods,
     split_line,
     table_hint,
+    text_line_tables,
 )
 from finengine.extract.indicators import match_indicator, normalize_label
 
@@ -63,6 +64,12 @@ def test_parse_periods_mixed_and_interim():
 def test_parse_periods_non_year_cells():
     # 非年份列（如"同比变动"）留空占位
     assert parse_periods(["项目", "2025年度", "同比变动"]) == ["2025年度", ""]
+
+
+def test_parse_periods_rejects_bare_year():
+    # 裸年份不是期间列（防散文伪造表头，实测：中塑第55页子公司数据污染）
+    assert parse_periods(["项目", "2022", "年", "月"]) == ["", "", ""]
+    assert parse_periods(["项目", "2025", "2024"]) == ["", ""]
 
 
 # ---------- 行切分（回退通道） ----------
@@ -204,3 +211,89 @@ def test_extract_unit_from_row_label_without_page_note():
     )
     out = extract_from_table(table, "balance", "这里没有单位标注", "test.pdf")
     assert out["存货"]["2025年度"].unit == "万元"
+
+
+def test_extract_skips_incomplete_rows():
+    """数据格少于期间列数的行跳过（单列子公司数据混入多期表的防线）。"""
+    table = ExtractedTable(
+        page=1,
+        rows=[
+            ["项目", "2025年度", "2024年度", "2023年度"],
+            ["净利润", "12,626.43", "10,002.07", "7,899.78"],  # 完整行 ✓
+            ["净利润", "273.44"],  # 单值行（子公司数据）✗
+        ],
+    )
+    out = extract_from_table(table, "summary", "", "test.pdf")
+    np_ = out["净利润"]
+    assert "2025年度" in np_
+    assert np_["2023年度"].value == 7899.78
+    # 单值行不得以 273.44 覆盖任何期间
+    assert all(v.value != 273.44 for v in np_.values())
+
+
+class _FakePage:
+    """最小 page 替身：extract_words 返回按行组织的词。"""
+
+    def __init__(self, lines: list[str], page_number: int = 1):
+        self._lines = lines
+        self.page_number = page_number
+
+    def extract_words(self) -> list[dict]:
+        words = []
+        for top, line in enumerate(self._lines, start=10):
+            for x, tok in enumerate(line.split()):
+                words.append({"top": float(top * 12), "x0": float(x * 60), "text": tok})
+        return words
+
+
+def test_text_line_tables_rejects_prose_header():
+    """散文行即使含多个年份也不得成为表头（中塑第55页污染源）。"""
+    page = _FakePage(
+        [
+            "2022 年 5 月 31 日，中塑有限全体股东签署了《发起人协议》，以 2022 年 5 月 31 日经审计",
+            "的净资产折合为股份有限公司的股本。",
+            "净利润 273.44万元",
+        ]
+    )
+    tables, _carry = text_line_tables(page)
+    assert tables == []
+
+
+def test_text_line_tables_accepts_real_header():
+    page = _FakePage(
+        [
+            "项目 2025年度 2024年度 2023年度",
+            "营业收入 74,947.57 69,995.26 53,677.89",
+            "净利润 12,626.43 10,002.07 7,899.78",
+            "经营活动产生的现金流量净额 9,639.33 10,312.85 5,670.45",
+        ]
+    )
+    tables, _carry = text_line_tables(page)
+    assert len(tables) == 1
+    assert tables[0].rows[0][0] == "项目"
+    assert len(tables[0].rows) == 4
+
+
+def test_transposed_rejects_subsidiary_period_label():
+    """转置表期间格必须是纯"2025年度"；"2025年末/2025年度"是子公司表（实测：燧原第91页）。"""
+    from finengine.extract.financial_extractor import extract_transposed
+
+    subsidiary = ExtractedTable(
+        page=91,
+        rows=[
+            ["项目", "总资产", "净资产", "营业收入", "净利润"],
+            ["2025年末\n/2025年度", "17,999.20", "-90,968.15", "3,328.20", "-18,894.22"],
+        ],
+    )
+    assert extract_transposed(subsidiary, "", "test.pdf") == {}
+
+    roe_table = ExtractedTable(
+        page=216,
+        rows=[
+            ["报告期", "加权平均净资产收益率", "基本每股收益"],
+            ["2025年度", "-31.85%", "-3.00"],
+            ["2024年度", "-87.98%", "-4.61"],
+        ],
+    )
+    out = extract_transposed(roe_table, "", "test.pdf")
+    assert out["加权平均净资产收益率"]["2025年度"].value == -31.85

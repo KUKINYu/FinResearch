@@ -34,9 +34,17 @@ PERCENT_INDICATORS = {ROE, GROSS_MARGIN, NET_MARGIN}
 
 # 年份识别：2025年度 / 2025-12-31 / 2025年12月31日 / 2023-12-31/2023年度
 YEAR_RE = re.compile(r"(20\d{2})")
+# 期间列识别（严格版）：必须是完整日期/年度写法——裸年份"2022"不算
+# （实测：散文里的裸年份曾伪造表头，导致子公司数据错位进假表）
+# 捕获组 1 = 年份；后缀用非捕获组
+PERIOD_CELL_RE = re.compile(r"(20\d{2})(?:年度|年\s*\d{1,2}|[-./])")
 # 期间列判断：含"X月"或"1-6"等字样的是期间数（如 2026年6月30日 → 1-6月）
 # 注意排除"12月31日"——年末时点数是整年列，不是期间数
 INTERIM_RE = re.compile(r"(1[0-2]|[1-9])月|1-6|1-9|1-3|[一二三]季度")
+# 回退通道里合法的表头标签（散文行的长标签不能当表头）
+HEADER_LABEL_RE = re.compile(r"^(项目|指标|报告期|财务指标|主要财务指标)?$")
+# 转置表的纯期间格："2025年度" / "2026年1-6月"（整格完全匹配，不含其他文字）
+PURE_PERIOD_RE = re.compile(r"^(20\d{2})年(?:度|1-6月)$")
 
 # 判定某表为资产负债表的关键行（表头为日期式时用）
 BALANCE_MARKERS = ("货币资金", "存货", "资产总计", "资产总额", "负债合计", "流动资产", "非流动资产")
@@ -149,9 +157,11 @@ def text_line_tables(
         if FOOTER_RE.match(text.strip()):
             continue
         cells = split_line(text)
-        year_count = sum(1 for c in cells[1:] if YEAR_RE.search(normalize_label(c or "")))
+        year_count = sum(1 for c in cells[1:] if PERIOD_CELL_RE.search(normalize_label(c or "")))
+        # 表头行的标签列必须是"项目/指标"等短标签，散文行（长标签）不能当表头
+        header_label_ok = bool(HEADER_LABEL_RE.match(normalize_label(cells[0] or "")))
         has_nums = len(cells) > 1
-        if year_count >= 2:
+        if year_count >= 2 and header_label_ok:
             # 新表头：收尾上一张表
             if current and len(current) > 2:
                 tables.append(ExtractedTable(page=page.page_number, rows=current))
@@ -205,7 +215,7 @@ def parse_periods(header_row: list[str]) -> list[str]:
     periods: list[str] = []
     for cell in header_row[1:]:  # 第 0 列是"项目/指标"
         text = normalize_label(cell or "")
-        m = YEAR_RE.search(text)
+        m = PERIOD_CELL_RE.search(text)
         if not m:
             periods.append("")
             continue
@@ -320,6 +330,9 @@ def extract_from_table(
         row_periods = periods
         if len(row) - 1 < len(periods):
             row_periods = [p for p in periods if p]
+        # 数据格仍少于期间列数：行不完整（如单列的子公司数据混入多期表），跳过
+        if len(row) - 1 < len(row_periods):
+            continue
         for j, cell in enumerate(row[1:]):
             period = row_periods[j] if j < len(row_periods) else ""
             if not period:
@@ -347,6 +360,8 @@ def extract_transposed(
     证监会标准"净资产收益率及每股收益"表即此布局（实测：燧原第216页）：
       报告期 | 加权平均净资产收益率 | 基本每股收益
       2025年度 | -31.85% | -3.00
+    期间格必须是纯"2025年度"格式——"2025年末/2025年度"是子公司
+    数据表（实测：燧原第91页重要子公司情况），不得提取。
     """
     header = [normalize_label(c or "") for c in table.rows[0]] if table.rows else []
     col_indicators: dict[int, str] = {}
@@ -362,11 +377,11 @@ def extract_transposed(
         if not row:
             continue
         period_text = normalize_label(row[0] or "")
-        m = YEAR_RE.search(period_text)
+        m = PURE_PERIOD_RE.match(period_text)
         if not m:
             continue
         year = m.group(1)
-        if INTERIM_RE.search(period_text) and "12月31日" not in period_text:
+        if INTERIM_RE.search(period_text):
             period = f"{year}年1-6月"
         else:
             period = f"{year}年度"
