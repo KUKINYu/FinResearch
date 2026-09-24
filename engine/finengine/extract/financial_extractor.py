@@ -18,6 +18,7 @@ import pdfplumber
 
 from .indicators import (
     COGS,
+    DEBT_RATIO,
     GROSS_MARGIN,
     INDICATOR_DEFS,
     INTEREST_DEBT_COMPONENTS,
@@ -25,6 +26,8 @@ from .indicators import (
     NET_PROFIT_PARENT,
     REVENUE,
     ROE,
+    TOTAL_ASSETS,
+    TOTAL_LIABILITIES,
     match_indicator,
     normalize_label,
 )
@@ -474,8 +477,22 @@ def extract_indicators(path: str | Path) -> dict:
     result: dict[str, dict] = {}
     for name in (REVENUE, "净利润", NET_PROFIT_PARENT, "加权平均净资产收益率",
                  "经营活动产生的现金流量净额", "应收账款", "存货", "研发费用",
-                 "毛利率", "净利率", "有息负债"):
+                 "毛利率", "净利率", "有息负债",
+                 TOTAL_ASSETS, TOTAL_LIABILITIES, "货币资金", "销售商品、提供劳务收到的现金"):
         result[name] = {p: d.to_dict() for p, d in inds.get(name, {}).items()}
+
+    # 资产负债率 = 总负债 / 总资产（资产负债表口径）
+    ta = inds.get(TOTAL_ASSETS, {})
+    tl = inds.get(TOTAL_LIABILITIES, {})
+    for period in set(ta) & set(tl):
+        if ta[period].unit == tl[period].unit and ta[period].value:
+            result.setdefault(DEBT_RATIO, {})[period] = {
+                "value": round(tl[period].value / ta[period].value * 100, 2),
+                "unit": "%",
+                "period": period,
+                "derived": "总负债/总资产",
+                "source": ta[period].source.to_dict(),
+            }
 
     # 毛利率 / 净利率：从利润表科目计算（与摘要表已有值冲突时以提取值为准）
     revenue = inds.get(REVENUE, {})

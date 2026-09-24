@@ -28,6 +28,13 @@ BONDS = "应付债券"
 NCL_DUE_1Y = "一年内到期的非流动负债"
 OPERATING_INCOME = "营业总收入"
 
+# M5 异常检测规则所需科目
+TOTAL_ASSETS = "总资产"
+TOTAL_LIABILITIES = "总负债"
+DEBT_RATIO = "资产负债率"
+CASH = "货币资金"
+CASH_FROM_SALES = "销售商品、提供劳务收到的现金"
+
 
 @dataclass(frozen=True)
 class IndicatorDef:
@@ -132,6 +139,23 @@ INDICATOR_DEFS: dict[str, IndicatorDef] = {
         (
             NCL_DUE_1Y,
             IndicatorDef(NCL_DUE_1Y, ("一年内到期的非流动负债（", "一年内到期的非流动负债"), "balance|summary"),
+        ),
+        (
+            TOTAL_ASSETS,
+            IndicatorDef(TOTAL_ASSETS, ("资产总计（", "资产总计", "资产总额（", "资产总额", "总资产（", "总资产"), "balance|summary"),
+        ),
+        (
+            TOTAL_LIABILITIES,
+            IndicatorDef(
+                TOTAL_LIABILITIES,
+                ("负债总计（", "负债总计", "负债合计（", "负债合计", "负债总额（", "负债总额", "总负债（", "总负债"),
+                "balance|summary",
+            ),
+        ),
+        (CASH, IndicatorDef(CASH, ("货币资金（", "货币资金"), "balance|summary")),
+        (
+            CASH_FROM_SALES,
+            IndicatorDef(CASH_FROM_SALES, ("销售商品、提供劳务收到的现金（", "销售商品、提供劳务收到的现金"), "cashflow|summary"),
         ),
     ]
 }

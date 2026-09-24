@@ -562,6 +562,112 @@ body {
   cursor: pointer;
 }
 
+/* ---- M5 异常发现 ---- */
+.anomalies-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.anomalies-header h2 {
+  font-size: 18px;
+  color: var(--navy);
+  margin: 0;
+}
+
+.anomaly-list {
+  list-style: none;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.anomaly-card {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.anomaly-card.severity-high {
+  border-left-color: #dc2626;
+}
+
+.anomaly-card.severity-medium {
+  border-left-color: #d97706;
+}
+
+.anomaly-card.severity-low {
+  border-left-color: var(--blue);
+}
+
+.anomaly-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.severity-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.severity-badge.severity-high {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.severity-badge.severity-medium {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.severity-badge.severity-low {
+  background: var(--blue-light);
+  color: var(--navy);
+}
+
+.anomaly-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.anomaly-desc {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+
+.anomaly-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.data-point-chip {
+  border: 1px solid var(--gray-border);
+  background: var(--gray-bg);
+  color: var(--navy);
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.data-point-chip:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
+}
+
 /* ---- PDF 阅读器（原文核对弹窗） ---- */
 .viewer-overlay {
   position: fixed;

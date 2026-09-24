@@ -116,6 +116,18 @@ def _parse_pdf(file_id: int, path: Path) -> None:
         session.commit()
     _extract_financials(file_id, path)
 
+    # 异常检测（M5：解析完成后自动跑规则引擎）
+    with SessionLocal() as session:
+        f = session.get(File, file_id)
+        f.parse_progress = 97
+        session.commit()
+        try:
+            from ..api import analyze_project
+
+            analyze_project(f.project_id, session)
+        except Exception as e:  # noqa: BLE001 规则失败不阻塞解析完成
+            print(f"[finengine] 异常检测失败：{e}")
+
     with SessionLocal() as session:
         f = session.get(File, file_id)
         f.status = STATUS_READY

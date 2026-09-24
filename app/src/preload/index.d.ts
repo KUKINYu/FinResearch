@@ -62,6 +62,8 @@ export interface FinEngineBridge {
   getFileLines(id: number): Promise<FinancialLineInfo[]>
   updateIndicator(id: number, payload: { value?: number; unit?: string }): Promise<{ ok: boolean }>
   deleteIndicator(id: number): Promise<{ ok: boolean }>
+  getAnomalies(projectId: number): Promise<unknown[]>
+  analyzeProject(projectId: number): Promise<{ anomalies: unknown[] }>
 }
 
 declare global {

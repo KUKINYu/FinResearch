@@ -146,6 +146,13 @@ app.whenReady().then(async () => {
   ipcMain.handle('engine:indicators:delete', (_e, id: number) =>
     engineRequest(`/api/indicators/${id}`, { method: 'DELETE' })
   )
+  // M5：异常检测
+  ipcMain.handle('engine:anomalies:get', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/anomalies`)
+  )
+  ipcMain.handle('engine:analyze', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/analyze`, { method: 'POST' })
+  )
   ipcMain.handle('engine:files:upload', async (_e, projectId: number) => {
     const result = await dialog.showOpenDialog({
       title: '选择要上传的资料（PDF / Excel）',

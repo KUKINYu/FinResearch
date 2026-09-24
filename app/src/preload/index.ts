@@ -22,5 +22,10 @@ contextBridge.exposeInMainWorld('finengine', {
   updateIndicator: (id: number, payload: unknown): Promise<unknown> =>
     ipcRenderer.invoke('engine:indicators:update', id, payload),
   deleteIndicator: (id: number): Promise<unknown> =>
-    ipcRenderer.invoke('engine:indicators:delete', id)
+    ipcRenderer.invoke('engine:indicators:delete', id),
+  // M5：异常检测
+  getAnomalies: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:anomalies:get', projectId),
+  analyzeProject: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:analyze', projectId)
 })
