@@ -131,6 +131,21 @@ app.whenReady().then(async () => {
   ipcMain.handle('engine:indicators:get', (_e, projectId: number) =>
     engineRequest(`/api/projects/${projectId}/indicators`)
   )
+  // M3：阅读器与校对
+  ipcMain.handle('engine:file:content', async (_e, id: number) => {
+    const res = await fetch(`http://127.0.0.1:${engine.port}/api/files/${id}/content`, {
+      headers: { 'X-FinEngine-Token': engine.token }
+    })
+    if (!res.ok) throw new Error(`读取文件失败（HTTP ${res.status}）`)
+    return await res.arrayBuffer()
+  })
+  ipcMain.handle('engine:file:lines', (_e, id: number) => engineRequest(`/api/files/${id}/lines`))
+  ipcMain.handle('engine:indicators:update', (_e, id: number, payload: unknown) =>
+    engineRequest(`/api/indicators/${id}`, { method: 'PATCH', body: payload })
+  )
+  ipcMain.handle('engine:indicators:delete', (_e, id: number) =>
+    engineRequest(`/api/indicators/${id}`, { method: 'DELETE' })
+  )
   ipcMain.handle('engine:files:upload', async (_e, projectId: number) => {
     const result = await dialog.showOpenDialog({
       title: '选择要上传的资料（PDF / Excel）',

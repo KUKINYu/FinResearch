@@ -14,5 +14,13 @@ contextBridge.exposeInMainWorld('finengine', {
     ipcRenderer.invoke('engine:files:upload', projectId),
   getFile: (id: number): Promise<unknown> => ipcRenderer.invoke('engine:files:get', id),
   getIndicators: (projectId: number): Promise<unknown> =>
-    ipcRenderer.invoke('engine:indicators:get', projectId)
+    ipcRenderer.invoke('engine:indicators:get', projectId),
+  // M3：阅读器与校对
+  getFileContent: (id: number): Promise<ArrayBuffer> =>
+    ipcRenderer.invoke('engine:file:content', id),
+  getFileLines: (id: number): Promise<unknown> => ipcRenderer.invoke('engine:file:lines', id),
+  updateIndicator: (id: number, payload: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('engine:indicators:update', id, payload),
+  deleteIndicator: (id: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:indicators:delete', id)
 })

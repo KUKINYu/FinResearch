@@ -22,12 +22,25 @@ export interface FileInfo {
 }
 
 export interface IndicatorInfo {
+  id: number
   name: string
   period: string
   value: number
   unit: string
   source_file_id: number | null
   source_page: number | null
+  derived: string | null
+}
+
+export interface FinancialLineInfo {
+  id: number
+  indicator: string
+  period: string
+  value: number
+  unit: string
+  page_no: number
+  bbox: string | null
+  label: string
   derived: string | null
 }
 
@@ -45,6 +58,10 @@ export interface FinEngineBridge {
   uploadFiles(projectId: number): Promise<FileInfo[] | null>
   getFile(id: number): Promise<FileInfo>
   getIndicators(projectId: number): Promise<IndicatorInfo[]>
+  getFileContent(id: number): Promise<ArrayBuffer>
+  getFileLines(id: number): Promise<FinancialLineInfo[]>
+  updateIndicator(id: number, payload: { value?: number; unit?: string }): Promise<{ ok: boolean }>
+  deleteIndicator(id: number): Promise<{ ok: boolean }>
 }
 
 declare global {

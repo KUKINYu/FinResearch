@@ -13,9 +13,14 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024).toFixed(0)} KB`
 }
 
-export default function ProjectsView(): React.JSX.Element {
+export default function ProjectsView({
+  selectedId,
+  onSelect
+}: {
+  selectedId: number | null
+  onSelect: (id: number | null) => void
+}): React.JSX.Element {
   const [projects, setProjects] = useState<ProjectInfo[]>([])
-  const [selectedId, setSelectedId] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const [newCompany, setNewCompany] = useState('')
@@ -70,7 +75,7 @@ export default function ProjectsView(): React.JSX.Element {
       setNewName('')
       setNewCompany('')
       await loadProjects()
-      setSelectedId(p.id)
+      onSelect(p.id)
     } catch (e) {
       setError(String(e))
     }
@@ -91,7 +96,7 @@ export default function ProjectsView(): React.JSX.Element {
     try {
       await window.finengine.deleteProject(id)
       if (selectedId === id) {
-        setSelectedId(null)
+        onSelect(null)
         setDetail(null)
       }
       await loadProjects()
@@ -132,7 +137,7 @@ export default function ProjectsView(): React.JSX.Element {
             <li
               key={p.id}
               className={p.id === selectedId ? 'project-item active' : 'project-item'}
-              onClick={() => setSelectedId(p.id)}
+              onClick={() => onSelect(p.id)}
             >
               <div className="project-name">{p.name}</div>
               <div className="project-company">

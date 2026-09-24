@@ -412,3 +412,220 @@ body {
   color: var(--navy);
   margin: 0 0 6px;
 }
+
+/* ---- 财务指标工作区（M3 校对界面） ---- */
+.indicators-view h2 {
+  font-size: 18px;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+
+.indicators-header {
+  margin-bottom: 14px;
+}
+
+.indicator-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.indicator-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+.indicator-table th,
+.indicator-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--gray-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.indicator-table th {
+  background: var(--navy);
+  color: #fff;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.indicator-table th.col-indicator,
+.indicator-table td.col-indicator {
+  text-align: left;
+  min-width: 180px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.indicator-table tbody tr:hover {
+  background: var(--gray-bg);
+}
+
+.cell-empty {
+  color: var(--gray-border);
+}
+
+.cell-value {
+  position: relative;
+  min-width: 120px;
+}
+
+.cell-number {
+  cursor: text;
+}
+
+.cell-unit {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.cell-input {
+  width: 110px;
+  padding: 4px 8px;
+  border: 1px solid var(--blue);
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: right;
+}
+
+.cell-delete {
+  display: none;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  border: none;
+  background: transparent;
+  color: #b91c1c;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+.cell-value:hover .cell-delete {
+  display: block;
+}
+
+.source-link {
+  display: block;
+  margin-top: 3px;
+  border: none;
+  background: transparent;
+  color: var(--blue);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline dotted;
+}
+
+.derived-mark {
+  color: var(--blue);
+  margin-left: 4px;
+  font-size: 11px;
+}
+
+/* ---- PDF 阅读器（原文核对弹窗） ---- */
+.viewer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 30, 55, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.viewer-dialog {
+  background: #fff;
+  border-radius: 10px;
+  width: 90vw;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.viewer-close-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.viewer-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.pdf-viewer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pdf-viewer-loading {
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.pdf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--gray-border);
+  background: var(--gray-bg);
+}
+
+.pdf-page-indicator {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.pdf-page-indicator input {
+  width: 56px;
+  padding: 3px 6px;
+  border: 1px solid var(--gray-border);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.pdf-file-name {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pdf-canvas-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  background: #e8ecf1;
+}
+
+.pdf-canvas-box {
+  position: relative;
+  box-shadow: 0 2px 12px rgba(15, 30, 55, 0.25);
+}
+
+.pdf-highlight {
+  position: absolute;
+  background: rgba(255, 196, 0, 0.35);
+  border: 2px solid #ff9800;
+  border-radius: 2px;
+  pointer-events: none;
+}

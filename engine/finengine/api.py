@@ -1,16 +1,18 @@
-"""REST API 路由（M2：项目/文件管理 + 解析流水线）。
+"""REST API 路由（M2：项目/文件管理 + 解析流水线；M3：阅读器与校对）。
 
 所有接口都在 require_token 中间件保护之下（见 main.py）。
 """
 
 from fastapi import APIRouter, Depends, File as FastAPIFile, HTTPException, UploadFile
+from fastapi.responses import Response
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .db import SessionLocal
-from .db.models import File, Indicator, Page, Project
+from .db.models import File, FinancialLine, Indicator, Page, Project
 from .pipeline import create_file_record, start_parse
+from .pipeline.parse_service import project_files_dir
 
 router = APIRouter(prefix="/api")
 
@@ -140,6 +142,43 @@ def get_page_text(file_id: int, page_no: int, session: Session = Depends(get_ses
     return {"file_id": file_id, "page_no": page_no, "text": page.text}
 
 
+@router.get("/files/{file_id}/content")
+def get_file_content(file_id: int, session: Session = Depends(get_session)):
+    """PDF 原文内容（供界面 pdf.js 渲染；大文件走内存返回，P0 够用）。"""
+    f = session.get(File, file_id)
+    if f is None:
+        raise HTTPException(404, "文件不存在")
+    path = project_files_dir(f.project_id) / f.stored_name
+    if not path.exists():
+        raise HTTPException(404, "文件内容缺失")
+    media = "application/pdf" if f.file_type == "pdf" else "application/octet-stream"
+    return Response(content=path.read_bytes(), media_type=media)
+
+
+@router.get("/files/{file_id}/lines")
+def get_financial_lines(file_id: int, session: Session = Depends(get_session)):
+    """文件级提取明细（校对界面数据源：含出处四元组与页内坐标）。"""
+    rows = session.execute(
+        select(FinancialLine)
+        .where(FinancialLine.file_id == file_id)
+        .order_by(FinancialLine.indicator, FinancialLine.period)
+    ).scalars().all()
+    return [
+        {
+            "id": r.id,
+            "indicator": r.indicator,
+            "period": r.period,
+            "value": r.value,
+            "unit": r.unit,
+            "page_no": r.page_no,
+            "bbox": r.bbox,
+            "label": r.label,
+            "derived": r.derived,
+        }
+        for r in rows
+    ]
+
+
 # ---------- 财务指标 ----------
 
 @router.get("/projects/{project_id}/indicators")
@@ -149,6 +188,7 @@ def get_indicators(project_id: int, session: Session = Depends(get_session)):
     ).scalars().all()
     return [
         {
+            "id": r.id,
             "name": r.name,
             "period": r.period,
             "value": r.value,
@@ -159,3 +199,33 @@ def get_indicators(project_id: int, session: Session = Depends(get_session)):
         }
         for r in rows
     ]
+
+
+class IndicatorUpdate(BaseModel):
+    value: float | None = None
+    unit: str | None = None
+
+
+@router.patch("/indicators/{indicator_id}")
+def update_indicator(indicator_id: int, body: IndicatorUpdate, session: Session = Depends(get_session)):
+    """校对：修正指标数值或单位（人工校对是产品设计的一部分）。"""
+    r = session.get(Indicator, indicator_id)
+    if r is None:
+        raise HTTPException(404, "指标不存在")
+    if body.value is not None:
+        r.value = body.value
+    if body.unit is not None:
+        r.unit = body.unit
+    session.commit()
+    return {"ok": True}
+
+
+@router.delete("/indicators/{indicator_id}")
+def delete_indicator(indicator_id: int, session: Session = Depends(get_session)):
+    """校对：删除错误数据（如混入的子公司数据）。"""
+    r = session.get(Indicator, indicator_id)
+    if r is None:
+        raise HTTPException(404, "指标不存在")
+    session.delete(r)
+    session.commit()
+    return {"ok": True}
