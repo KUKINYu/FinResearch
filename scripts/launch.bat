@@ -1,10 +1,10 @@
 @echo off
-REM FinResearch å¯åŠ¨è„šæœ¬ï¼ˆé¦–æ¬¡ä½¿ç”¨è¯·å…ˆè¿è¡Œ setup.batï¼‰
-REM é˜²å¾¡ï¼šä¸ªåˆ«æœºå™¨çš„çŽ¯å¢ƒå˜é‡ ELECTRON_RUN_AS_NODE=1 ä¼šè®© Electron ä»¥çº¯ Node æ¨¡å¼è¿è¡Œå¯¼è‡´å¯åŠ¨å¤±è´¥ï¼Œè¿™é‡Œå¼ºåˆ¶ç§»é™¤
+REM FinResearch Æô¶¯½Å±¾£¨Ê×´ÎÊ¹ÓÃÇëÏÈÔËÐÐ setup.bat£©
+REM ·ÀÓù£º¸ö±ð»úÆ÷»·¾³±äÁ¿ ELECTRON_RUN_AS_NODE=1 »áÈÃ Electron ÒÔ´¿ Node Ä£Ê½ÔËÐÐµ¼ÖÂÆô¶¯Ê§°Ü£¬ÕâÀïÇ¿ÖÆÒÆ³ý
 set ELECTRON_RUN_AS_NODE=
 cd /d "%~dp0..\app"
 if not exist node_modules (
-  echo é¦–æ¬¡è¿è¡Œï¼Œå…ˆå®‰è£…ä¾èµ–...
+  echo Ê×´ÎÔËÐÐ£¬ÏÈ°²×°ÒÀÀµ...
   call npm install
 )
 call npm run dev

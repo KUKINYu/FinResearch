@@ -1,5 +1,5 @@
 @echo off
-REM 鏃犲ご鍒嗘瀽锛歛gent 瀵硅瘽鍐呯洿鎺ュ垎鏋愭枃妗ｏ紝鏃犻渶鎵撳紑鐣岄潰
-REM 鐢ㄦ硶锛歴cripts\analyze.bat "鏂囦欢璺緞.pdf"
+REM 无头分析：agent 对话内直接分析文档，无需打开界面
+REM 用法：scripts\analyze.bat "文件路径.pdf"
 cd /d "%~dp0..\engine"
 .venv\Scripts\python -m finengine analyze %*

@@ -1,28 +1,28 @@
 @echo off
-REM FinResearch å®‰è£…è„šæœ¬ï¼šåˆ›å»º Python è™šæ‹Ÿç¯å¢ƒ + å®‰è£…å¼•æ“ä¸ç•Œé¢ä¾èµ–
-REM é¦–æ¬¡ä½¿ç”¨è¿è¡Œä¸€æ¬¡å³å¯ï¼ˆçº¦å‡ åˆ†é’Ÿï¼‰
+REM FinResearch °²×°½Å±¾£º´´½¨ Python ĞéÄâ»·¾³ + °²×°ÒıÇæÓë½çÃæÒÀÀµ
+REM Ê×´ÎÊ¹ÓÃÔËĞĞÒ»´Î¼´¿É£¨Ô¼¼¸·ÖÖÓ£©
 setlocal
 cd /d "%~dp0.."
 
 echo ============================================
-echo   FinResearch å®‰è£…
+echo   FinResearch °²×°
 echo ============================================
 
-echo [1/3] åˆ›å»º Python è™šæ‹Ÿç¯å¢ƒ...
+echo [1/3] ´´½¨ Python ĞéÄâ»·¾³...
 cd engine
 python -m venv .venv
 if errorlevel 1 (
-  echo å¤±è´¥ï¼šè¯·ç¡®è®¤å·²å®‰è£… Python 3.10+ å¹¶åŠ å…¥ PATHï¼ˆpython.org ä¸‹è½½ï¼‰
+  echo Ê§°Ü£ºÇëÈ·ÈÏÒÑ°²×° Python 3.10+ ²¢¼ÓÈë PATH£¨python.org ÏÂÔØ£©
   pause & exit /b 1
 )
 .venv\Scripts\python -m pip install --upgrade pip --quiet
-echo [2/3] å®‰è£…å¼•æ“ä¾èµ–...
+echo [2/3] °²×°ÒıÇæÒÀÀµ...
 .venv\Scripts\python -m pip install -r requirements.txt --quiet
 
-echo [3/3] å®‰è£…ç•Œé¢ä¾èµ–ï¼ˆnpmï¼Œå¯èƒ½éœ€è¦å‡ åˆ†é’Ÿï¼‰...
+echo [3/3] °²×°½çÃæÒÀÀµ£¨npm£¬¿ÉÄÜĞèÒª¼¸·ÖÖÓ£©...
 cd ..\app
 call npm install
 
 echo.
-echo å®‰è£…å®Œæˆï¼è¿è¡Œ scripts\launch.bat å¯åŠ¨è½¯ä»¶ã€‚
+echo °²×°Íê³É£¡ÔËĞĞ scripts\launch.bat Æô¶¯Èí¼ş¡£
 pause
