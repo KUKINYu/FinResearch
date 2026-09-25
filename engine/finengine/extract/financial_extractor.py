@@ -92,11 +92,16 @@ class DataPoint:
 
 @dataclass
 class ExtractedTable:
-    """一页上的一个表格：文本 + 坐标（供界面跳页高亮用）。"""
+    """一页上的一个表格：文本 + 坐标（供界面跳页高亮用）。
+
+    cells_bbox 与 rows 对齐的单元格级坐标（高亮精确到数字所在格子）；
+    文本行回退通道没有坐标，为 None。
+    """
 
     page: int
     rows: list[list[str]] = field(default_factory=list)
     bbox: tuple[float, float, float, float] | None = None
+    cells_bbox: list[list[tuple[float, float, float, float] | None]] = field(default_factory=list)
 
 
 # 行内"标签 + 数值们"的切分：找到第一个数值 token，之前为标签
@@ -191,13 +196,25 @@ def iter_tables(pdf) -> list[ExtractedTable]:
     result: list[ExtractedTable] = []
     carry: list[list[str]] = []
     for page_idx, page in enumerate(pdf.pages):
-        rows_list = page.extract_tables()
+        found = page.find_tables()
         usable = False
-        if rows_list:
-            found = page.find_tables()
-            for i, rows in enumerate(rows_list):
-                bbox = tuple(found[i].bbox) if i < len(found) else None
-                table = ExtractedTable(page=page_idx + 1, rows=rows, bbox=bbox)
+        if found:
+            for t in found:
+                # 单一来源：文本用 t.extract()、坐标用 t.rows[r].cells
+                # （实测 extract_tables 与 find_tables 的表格切分可能不一致，
+                # 分开配对会错位——14 行表被 find_tables 切成 2×7 时尤甚）
+                rows = t.extract()
+                cells_bbox: list[list[tuple | None]] = []
+                for row in t.rows:
+                    cells_bbox.append(
+                        [
+                            tuple(c) if isinstance(c, tuple) and len(c) == 4 else None
+                            for c in row.cells
+                        ]
+                    )
+                table = ExtractedTable(
+                    page=page_idx + 1, rows=rows, bbox=tuple(t.bbox), cells_bbox=cells_bbox
+                )
                 if has_year_columns(rows) and table_hint(table) != "other":
                     usable = True
                 result.append(table)
@@ -321,7 +338,7 @@ def extract_from_table(
         return {}
     unit = unit_from_page(page_text, table.rows)
     out: dict[str, dict[str, DataPoint]] = {}
-    for row in table.rows[1:]:
+    for ri, row in enumerate(table.rows[1:], start=1):
         if not row:
             continue
         label = normalize_label(row[0] or "")
@@ -348,7 +365,11 @@ def extract_from_table(
                 cell_unit = "%"
             else:
                 cell_unit = unit
-            src = SourceRef(file=file_name, page=table.page, label=row[0], bbox=table.bbox)
+            # 出处坐标：精确到数值所在单元格（高亮只框住那个数字）
+            cell_bbox = None
+            if ri < len(table.cells_bbox) and j + 1 < len(table.cells_bbox[ri]):
+                cell_bbox = table.cells_bbox[ri][j + 1]
+            src = SourceRef(file=file_name, page=table.page, label=row[0], bbox=cell_bbox)
             out.setdefault(indicator, {})[period] = DataPoint(
                 value=value, unit=cell_unit, period=period, source=src
             )
@@ -376,7 +397,7 @@ def extract_transposed(
         return {}
     unit = unit_from_page(page_text, table.rows)
     out: dict[str, dict[str, DataPoint]] = {}
-    for row in table.rows[1:]:
+    for ri, row in enumerate(table.rows[1:], start=1):
         if not row:
             continue
         period_text = normalize_label(row[0] or "")
@@ -399,7 +420,11 @@ def extract_transposed(
                 cell_unit = "%"
             else:
                 cell_unit = unit
-            src = SourceRef(file=file_name, page=table.page, label=row[0], bbox=table.bbox)
+            # 出处坐标：精确到数值所在单元格
+            cell_bbox = None
+            if ri < len(table.cells_bbox) and j < len(table.cells_bbox[ri]):
+                cell_bbox = table.cells_bbox[ri][j]
+            src = SourceRef(file=file_name, page=table.page, label=row[0], bbox=cell_bbox)
             out.setdefault(ind, {})[period] = DataPoint(
                 value=value, unit=cell_unit, period=period, source=src
             )
