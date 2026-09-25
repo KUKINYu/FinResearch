@@ -209,6 +209,19 @@ app.whenReady().then(async () => {
   ipcMain.handle('engine:notes:reflect', (_e, projectId: number) =>
     engineRequest(`/api/projects/${projectId}/notes/reflect`, { method: 'POST' })
   )
+  // P1：估值工具箱 / 股价走势
+  ipcMain.handle('engine:valuation:comparable', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/valuation/comparable`, { method: 'POST' })
+  )
+  ipcMain.handle('engine:valuation:dcf', (_e, projectId: number, inputs: unknown) =>
+    engineRequest(`/api/projects/${projectId}/valuation/dcf`, { method: 'POST', body: inputs })
+  )
+  ipcMain.handle('engine:valuation:runs', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/valuation/runs`)
+  )
+  ipcMain.handle('engine:market:price', (_e, code: string) =>
+    engineRequest(`/api/market/price/${code}`)
+  )
   // P1：成果导出（引擎生成文件 → 保存对话框 → 写盘）
   ipcMain.handle(
     'engine:export:save',

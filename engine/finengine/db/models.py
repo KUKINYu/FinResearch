@@ -181,3 +181,17 @@ class Announcement(Base):
     source: Mapped[str | None] = mapped_column(String(50))  # 公告/新闻
     negative: Mapped[bool] = mapped_column(default=False)  # 负面词命中（诉讼/处罚/问询等）
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class ValuationRun(Base):
+    """估值测算记录（P1-5：输入带哈希版本化，审计可溯源）。"""
+
+    __tablename__ = "valuation_runs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    method: Mapped[str] = mapped_column(String(30))  # comparable / dcf
+    inputs_json: Mapped[str] = mapped_column(Text)
+    inputs_hash: Mapped[str] = mapped_column(String(64), index=True)  # 输入指纹
+    result_json: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())

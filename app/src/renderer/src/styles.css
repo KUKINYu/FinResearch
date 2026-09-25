@@ -1415,6 +1415,146 @@ body {
   white-space: pre-wrap;
 }
 
+/* ---- P1-5 估值工具箱 ---- */
+.valuation-panel {
+  background: #fff;
+}
+
+.valuation-panel h5 {
+  font-size: 13px;
+  color: var(--navy);
+  margin: 0 0 6px;
+}
+
+.val-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.val-method-card {
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.val-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.val-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.val-field input {
+  width: 140px;
+  padding: 5px 8px;
+  border: 1px solid var(--gray-border);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.val-result {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.val-result b {
+  color: var(--navy);
+}
+
+.val-peer-list {
+  list-style: none;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.val-scenarios {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.val-scenarios th,
+.val-scenarios td {
+  border: 1px solid var(--gray-border);
+  padding: 4px 8px;
+  text-align: right;
+}
+
+.val-scenarios th {
+  background: var(--gray-bg);
+  color: var(--navy);
+}
+
+.val-history {
+  margin-top: 12px;
+}
+
+.val-history ul {
+  list-style: none;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.val-history li {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.val-run-method {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.val-run-hash {
+  font-family: monospace;
+}
+
+.val-run-time {
+  margin-left: auto;
+}
+
+/* ---- P1-8 股价走势 ---- */
+.comp-price-section {
+  margin-top: 14px;
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.comp-price-section h4 {
+  font-size: 14px;
+  color: var(--navy);
+  margin: 0;
+}
+
+.comp-price-section select {
+  padding: 5px 10px;
+  border: 1px solid var(--gray-border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.comp-price-chart {
+  height: 260px;
+  margin-top: 8px;
+}
+
 /* ---- PDF 阅读器（原文核对弹窗） ---- */
 .viewer-overlay {
   position: fixed;

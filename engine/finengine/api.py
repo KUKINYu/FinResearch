@@ -489,6 +489,37 @@ def summarize_announcements(project_id: int):
     return ai_summarize(project_id)
 
 
+# ---------- 估值工具箱（P1-5） ----------
+
+@router.post("/projects/{project_id}/valuation/comparable")
+def valuation_comparable(project_id: int, refresh: int = 0):
+    from .valuation import comparable_valuation
+
+    return comparable_valuation(project_id, refresh=bool(refresh))
+
+
+class DCFIn(BaseModel):
+    base_fcf: float  # 基期自由现金流（万元）
+    growth: float  # 显性期增速（如 0.12）
+    wacc: float  # 折现率（如 0.10）
+    terminal_growth: float  # 永续增速（如 0.02）
+    shares: float  # 总股本（万股）
+
+
+@router.post("/projects/{project_id}/valuation/dcf")
+def valuation_dcf(project_id: int, body: DCFIn):
+    from .valuation import dcf_valuation
+
+    return dcf_valuation(project_id, body.model_dump())
+
+
+@router.get("/projects/{project_id}/valuation/runs")
+def valuation_runs(project_id: int):
+    from .valuation import list_runs
+
+    return {"runs": list_runs(project_id)}
+
+
 # ---------- 风险评分卡（P1-3） ----------
 
 @router.get("/projects/{project_id}/riskscore")
@@ -529,6 +560,13 @@ def market_search(q: str):
     from .market import search_stocks
 
     return {"results": search_stocks(q)}
+
+
+@router.get("/market/price/{code}")
+def market_price(code: str):
+    from .market.source import get_price_history
+
+    return {"code": code, "history": get_price_history(code)}
 
 
 class ComparableIn(BaseModel):

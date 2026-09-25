@@ -68,5 +68,14 @@ contextBridge.exposeInMainWorld('finengine', {
   addNote: (projectId: number, content: string): Promise<unknown> =>
     ipcRenderer.invoke('engine:notes:add', projectId, content),
   reflectNotes: (projectId: number): Promise<unknown> =>
-    ipcRenderer.invoke('engine:notes:reflect', projectId)
+    ipcRenderer.invoke('engine:notes:reflect', projectId),
+  // P1：估值 / 股价
+  valuationComparable: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:valuation:comparable', projectId),
+  valuationDcf: (projectId: number, inputs: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('engine:valuation:dcf', projectId, inputs),
+  getValuationRuns: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:valuation:runs', projectId),
+  getPriceHistory: (code: string): Promise<unknown> =>
+    ipcRenderer.invoke('engine:market:price', code)
 })

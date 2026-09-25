@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as echarts from 'echarts'
+import ValuationPanel from './ValuationPanel'
 
 interface StockHit {
   code: string
@@ -55,6 +56,10 @@ export default function ComparisonView({
   const [fetchedAt, setFetchedAt] = useState('')
   const [error, setError] = useState('')
   const chartRef = useRef<HTMLDivElement>(null)
+  // 股价走势（P1-8）：选中公司的归一化走势
+  const [priceCode, setPriceCode] = useState('')
+  const [priceData, setPriceData] = useState<{ date: string; close: number }[]>([])
+  const priceChartRef = useRef<HTMLDivElement>(null)
 
   const loadComparables = useCallback(async (): Promise<void> => {
     if (projectId === null) return
@@ -128,6 +133,47 @@ export default function ComparisonView({
   }
 
   // 图表
+  // 股价走势图（P1-8）
+  useEffect(() => {
+    if (!priceChartRef.current || priceData.length === 0) return
+    const chart = echarts.init(priceChartRef.current)
+    chart.setOption({
+      tooltip: { trigger: 'axis' },
+      grid: { left: 50, right: 20, top: 20, bottom: 30 },
+      xAxis: {
+        type: 'category',
+        data: priceData.map((d) => d.date),
+        axisLabel: { color: '#7a8aa0', formatter: (v: string) => v.slice(5) }
+      },
+      yAxis: {
+        type: 'value',
+        scale: true,
+        axisLabel: { color: '#7a8aa0' },
+        splitLine: { lineStyle: { color: '#eef2f7' } }
+      },
+      series: [
+        {
+          type: 'line',
+          data: priceData.map((d) => d.close),
+          showSymbol: false,
+          lineStyle: { color: '#1B3A6B', width: 1.8 },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(74, 144, 217, 0.25)' },
+              { offset: 1, color: 'rgba(74, 144, 217, 0.02)' }
+            ])
+          }
+        }
+      ]
+    })
+    const onResize = (): void => chart.resize()
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      chart.dispose()
+    }
+  }, [priceData])
+
   useEffect(() => {
     if (!chartRef.current || companies.length === 0) return
     const chart = echarts.init(chartRef.current)
@@ -252,6 +298,43 @@ export default function ComparisonView({
           </div>
           <div ref={chartRef} className="comp-chart" />
           {fetchedAt && <p className="placeholder">数据获取时间：{fetchedAt.replace('T', ' ')}</p>}
+
+          <div className="comp-price-section">
+            <div className="pane-header">
+              <h4>股价走势（近一年，前复权）</h4>
+              <select
+                value={priceCode}
+                onChange={async (e) => {
+                  const code = e.target.value
+                  setPriceCode(code)
+                  if (!code) {
+                    setPriceData([])
+                    return
+                  }
+                  try {
+                    const resp = (await window.finengine.getPriceHistory(code)) as {
+                      history: { date: string; close: number }[]
+                    }
+                    setPriceData(resp.history ?? [])
+                  } catch {
+                    setPriceData([])
+                  }
+                }}
+              >
+                <option value="">选择公司</option>
+                {companies.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {priceData.length > 0 && <div ref={priceChartRef} className="comp-price-chart" />}
+          </div>
+
+          <div className="risk-section">
+            <ValuationPanel projectId={projectId} />
+          </div>
         </>
       )}
     </div>

@@ -142,7 +142,10 @@ def get_financials(code: str, refresh: bool = False) -> dict[str, dict[str, floa
 # ---------- 估值与行情 ----------
 
 def get_valuation(codes: list[str], refresh: bool = False) -> dict[str, dict]:
-    """实时估值：PE/PB/总市值（全市场快照缓存 1 小时）。"""
+    """实时估值：PE/PB/总市值（全市场快照缓存 1 小时）。
+
+    P1-9 数据源回退链：akshare（东财）失败 → 缓存 → baostock（如已安装）。
+    """
     result: dict[str, dict] = {}
     if not codes:
         return result
@@ -172,8 +175,95 @@ def get_valuation(codes: list[str], refresh: bool = False) -> dict[str, dict]:
             if code in items:
                 result[code] = items[code]
     except Exception as e:  # noqa: BLE001 行情失败不影响财务数据
-        print(f"[finengine] 行情数据获取失败：{e}")
+        print(f"[finengine] 行情数据获取失败（akshare）：{e}，尝试备用源 baostock")
+        result = _valuation_via_baostock(codes)
+        if result:
+            cache_put(key, {"items": result})
     return result
+
+
+def _valuation_via_baostock(codes: list[str]) -> dict[str, dict]:
+    """备用源：baostock 日线含 peTTM/pbMRQ（需已安装 baostock 包）。"""
+    try:
+        import baostock as bs
+    except ImportError:
+        return {}
+    out: dict[str, dict] = {}
+    try:
+        bs.login()
+        for code in codes:
+            bs_code = f"sh.{code}" if code.startswith(("6", "9")) else f"sz.{code}"
+            rs = bs.query_history_k_data_plus(
+                bs_code, "date,code,close,peTTM,pbMRQ", start_date="", end_date="", frequency="d"
+            )
+            rows = []
+            while rs.error_code == "0" and rs.next():
+                rows.append(rs.get_row_data())
+            if rows:
+                date_, c, close, pe, pb = rows[-1]
+                out[code] = {
+                    "name": c,
+                    "pe": float(pe) if pe else None,
+                    "pb": float(pb) if pb else None,
+                    "market_cap": None,
+                    "price": float(close) if close else None,
+                    "as_of": date_,
+                }
+    except Exception as e:  # noqa: BLE001
+        print(f"[finengine] baostock 获取失败：{e}")
+    finally:
+        try:
+            bs.logout()
+        except Exception:  # noqa: BLE001
+            pass
+    return out
+
+
+def get_price_history(code: str, days: int = 250, refresh: bool = False) -> list[dict]:
+    """日线收盘价（前复权），用于走势图。缓存 6 小时。"""
+    key = f"price_{code}"
+    if not refresh:
+        cached = cache_get(key, 6 * 3600)
+        if cached is not None:
+            return cached["data"]
+    ak = _ak()
+    data: list[dict] = []
+    try:
+        df = ak.stock_zh_a_hist(symbol=code, period="daily", start_date="", adjust="qfq")
+        df = df.tail(days)
+        for _, row in df.iterrows():
+            data.append({"date": str(row["日期"]), "close": float(row["收盘"])})
+    except Exception as e:  # noqa: BLE001
+        print(f"[finengine] 股价历史获取失败：{e}")
+        data = _price_via_baostock(code, days)
+    if data:
+        cache_put(key, {"data": data})
+    return data
+
+
+def _price_via_baostock(code: str, days: int) -> list[dict]:
+    try:
+        import baostock as bs
+    except ImportError:
+        return []
+    out: list[dict] = []
+    try:
+        bs.login()
+        bs_code = f"sh.{code}" if code.startswith(("6", "9")) else f"sz.{code}"
+        rs = bs.query_history_k_data_plus(bs_code, "date,close", frequency="d", adjustflag="2")
+        rows = []
+        while rs.error_code == "0" and rs.next():
+            rows.append(rs.get_row_data())
+        for date_, close in rows[-days:]:
+            out.append({"date": date_, "close": float(close)})
+    except Exception as e:  # noqa: BLE001
+        print(f"[finengine] baostock 股价获取失败：{e}")
+    finally:
+        try:
+            bs.logout()
+        except Exception:  # noqa: BLE001
+            pass
+    return out
 
 
 # ---------- 对比汇总 ----------

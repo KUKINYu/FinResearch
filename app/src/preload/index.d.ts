@@ -84,6 +84,17 @@ export interface FinEngineBridge {
   removeComparable(projectId: number, comparableId: number): Promise<{ ok: boolean }>
   getComparison(projectId: number, refresh: boolean): Promise<unknown>
   exportFile(projectId: number, type: 'anomalies' | 'indicators' | 'comparison'): Promise<string | null>
+  fetchAnnouncements(projectId: number): Promise<unknown>
+  getAnnouncements(projectId: number): Promise<unknown>
+  summarizeAnnouncements(projectId: number): Promise<unknown>
+  getRiskScore(projectId: number): Promise<unknown>
+  getNotes(projectId: number): Promise<unknown>
+  addNote(projectId: number, content: string): Promise<unknown>
+  reflectNotes(projectId: number): Promise<unknown>
+  valuationComparable(projectId: number): Promise<unknown>
+  valuationDcf(projectId: number, inputs: unknown): Promise<unknown>
+  getValuationRuns(projectId: number): Promise<unknown>
+  getPriceHistory(code: string): Promise<unknown>
   getRules(): Promise<{
     rules: {
       rule_id: string
