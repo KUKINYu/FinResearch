@@ -43,18 +43,30 @@ export default function PdfViewer({
 
   useEffect(() => {
     let cancelled = false
+    let doc: pdfjsLib.PDFDocumentProxy | null = null
     setLoadError('')
     setPdf(null)
+    // 关键：复制一份数据再交给 pdf.js——它会用"转移"方式把缓冲区
+    // 交给 worker（原 ArrayBuffer 随即失效）。React 开发模式下组件
+    // 会挂载两次，第二次若用原缓冲就会报
+    // "DataCloneError: ArrayBuffer is already detached"。
+    const data = new Uint8Array(bytes.slice(0))
     pdfjsLib
-      .getDocument({ data: new Uint8Array(bytes) })
-      .promise.then((doc) => {
-        if (!cancelled) setPdf(doc)
+      .getDocument({ data })
+      .promise.then((d) => {
+        if (cancelled) {
+          d.destroy().catch(() => undefined)
+          return
+        }
+        doc = d
+        setPdf(d)
       })
       .catch((e: unknown) => {
         if (!cancelled) setLoadError(`PDF 加载失败：${String(e)}`)
       })
     return () => {
       cancelled = true
+      if (doc) doc.destroy().catch(() => undefined)
     }
   }, [bytes])
 
