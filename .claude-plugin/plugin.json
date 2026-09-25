@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "fintech-research",
+  "version": "0.1.0",
+  "description": "金融研究与尽调辅助软件 FinResearch：上传招股说明书/年报/研报，自动提取财务指标（可溯源到原文页码）、发现财务异常、全文搜索（金融同义词）、同行对比、估值测算、风险评分卡、AI 问答（BYOK）。全部本地运行。",
+  "author": {
+    "name": "KUKINYu"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/KUKINYu/FinResearch",
+  "repository": "https://github.com/KUKINYu/FinResearch",
+  "keywords": ["finance", "ipo", "due-diligence", "fundamental-analysis", "fintech"],
+  "skills": ["./"]
+}

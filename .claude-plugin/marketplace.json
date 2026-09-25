@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "FinResearch",
+  "owner": {
+    "name": "KUKINYu"
+  },
+  "metadata": {
+    "description": "金融研究与尽调辅助软件"
+  },
+  "plugins": [
+    {
+      "name": "fintech-research",
+      "source": "./",
+      "description": "金融研究与尽调辅助软件 FinResearch",
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "keywords": ["finance", "ipo", "due-diligence", "fintech"]
+    }
+  ]
+}

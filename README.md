@@ -20,13 +20,25 @@
 
 从 [GitHub Releases](https://github.com/KUKINYu/FinResearch/releases) 下载 `FinResearch-Setup-x.x.x.exe`，双击安装。
 
-### 方式二：装进你的 Agent（Claude Code / Codex 等）
+### 方式二：装进你的 Agent
+
+#### Claude Code（一条命令安装）
+
+在 Claude Code 里依次输入：
+
+```
+/plugin marketplace add KUKINYu/FinResearch
+/plugin install fintech-research@FinResearch
+```
+
+装好后对 agent 说"启动金融研究软件"（agent 会自动安装依赖并启动），
+或在对话里直接说"分析这份招股书"（无头模式，不需要打开界面）。
+
+#### Codex 及其他 agent
 
 本仓库本身就是一个跨 agent 的 skill（`SKILL.md` 在根目录）：
-
-1. 把仓库复制/克隆到你 agent 的 skills 目录（如 `~/.claude/skills/` 或 `~/.codex/skills/`）
-2. 对 agent 说"启动金融研究软件"，agent 会自动安装依赖并启动
-3. 也可以不打开界面，直接对 agent 说"分析这份招股书"（无头模式）
+把仓库复制到 agent 的 skills 目录（如 `~/.codex/skills/`），
+对 agent 说"分析这份招股书"即可。
 
 ### 从源码运行（开发者）
 
