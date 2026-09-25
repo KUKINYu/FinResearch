@@ -18,7 +18,7 @@
 
 ### 方式一：安装包（推荐给普通用户）
 
-从 [GitHub Releases](https://github.com/你的用户名/FinResearch/releases) 下载 `FinResearch-Setup-x.x.x.exe`，双击安装。
+从 [GitHub Releases](https://github.com/KUKINYu/FinResearch/releases) 下载 `FinResearch-Setup-x.x.x.exe`，双击安装。
 
 ### 方式二：装进你的 Agent（Claude Code / Codex 等）
 
