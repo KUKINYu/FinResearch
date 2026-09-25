@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
-// ?url 导入让 Vite 在开发与打包两种模式下都正确解析 worker 资源
-// （此前 new URL(..., import.meta.url) 在 dev 模式下解析到源码目录导致 404、PDF 无法渲染）
-import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl
+// worker 资源两种模式分别处理：
+// - 开发模式：用 public/pdf.worker.min.mjs（Vite 对 public 文件零转换——
+//   此前走 node_modules 时 Vite 给 worker 注入了 /@vite/client 的 HMR 代码，
+//   worker 加载即崩，PDF 永远"正在加载"。这是根因。）
+// - 打包模式：用 Vite 打包后的资源（升级 pdfjs-dist 时需同步更新 public 副本）
+import prodWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = import.meta.env.DEV
+  ? new URL('/pdf.worker.min.mjs', window.location.origin).toString()
+  : prodWorkerUrl
 
 interface Props {
   bytes: ArrayBuffer
@@ -26,6 +32,7 @@ export default function PdfViewer({
 }: Props): React.JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [pdf, setPdf] = useState<pdfjsLib.PDFDocumentProxy | null>(null)
+  const [loadError, setLoadError] = useState('')
   const [page, setPage] = useState(targetPage)
   const [highlightRect, setHighlightRect] = useState<{
     left: number
@@ -36,20 +43,18 @@ export default function PdfViewer({
 
   useEffect(() => {
     let cancelled = false
+    setLoadError('')
+    setPdf(null)
     pdfjsLib
       .getDocument({ data: new Uint8Array(bytes) })
       .promise.then((doc) => {
         if (!cancelled) setPdf(doc)
       })
-      .catch(() => {
-        if (!cancelled) setPdf(null)
+      .catch((e: unknown) => {
+        if (!cancelled) setLoadError(`PDF 加载失败：${String(e)}`)
       })
     return () => {
       cancelled = true
-      setPdf((old) => {
-        old?.destroy().catch(() => undefined)
-        return null
-      })
     }
   }, [bytes])
 
@@ -101,6 +106,9 @@ export default function PdfViewer({
     onPageChange?.(clamped)
   }
 
+  if (loadError) {
+    return <div className="pdf-viewer-loading error-banner">{loadError}</div>
+  }
   if (!pdf) {
     return <div className="pdf-viewer-loading">正在加载 {fileName}…</div>
   }
