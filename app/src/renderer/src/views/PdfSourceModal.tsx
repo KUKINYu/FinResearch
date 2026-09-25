@@ -5,16 +5,14 @@ interface Props {
   fileId: number
   fileName: string
   page: number
-  bbox: string | null
   onClose: () => void
 }
 
-/** 原文核对弹窗：加载文件内容并跳转到指定页（含页内高亮）。 */
+/** 原文核对弹窗：加载文件内容并跳转到指定页。 */
 export default function PdfSourceModal({
   fileId,
   fileName,
   page,
-  bbox,
   onClose
 }: Props): React.JSX.Element {
   const [bytes, setBytes] = useState<ArrayBuffer | null>(null)
@@ -45,9 +43,7 @@ export default function PdfSourceModal({
           </button>
         </div>
         {error && <div className="error-banner">{error}</div>}
-        {bytes && (
-          <PdfViewer bytes={bytes} fileName={fileName} targetPage={page} bbox={bbox} />
-        )}
+        {bytes && <PdfViewer bytes={bytes} fileName={fileName} targetPage={page} />}
       </div>
     </div>
   )

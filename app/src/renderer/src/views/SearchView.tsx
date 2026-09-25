@@ -102,7 +102,7 @@ export default function SearchView({
           fileId={viewer.fileId}
           fileName={viewer.fileName}
           page={viewer.page}
-          bbox={null}
+
           onClose={() => setViewer(null)}
         />
       )}

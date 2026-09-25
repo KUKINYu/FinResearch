@@ -16,8 +16,6 @@ interface Props {
   bytes: ArrayBuffer
   fileName: string
   targetPage: number
-  /** 页内高亮区域（PDF 坐标系 "x0,y0,x1,y1"），来自提取时的出处四元组 */
-  bbox?: string | null
   onPageChange?: (page: number) => void
 }
 
@@ -27,19 +25,12 @@ export default function PdfViewer({
   bytes,
   fileName,
   targetPage,
-  bbox,
   onPageChange
 }: Props): React.JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [pdf, setPdf] = useState<pdfjsLib.PDFDocumentProxy | null>(null)
   const [loadError, setLoadError] = useState('')
   const [page, setPage] = useState(targetPage)
-  const [highlightRect, setHighlightRect] = useState<{
-    left: number
-    top: number
-    width: number
-    height: number
-  } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -89,24 +80,7 @@ export default function PdfViewer({
       viewport,
       transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : undefined
     }).promise
-    // 高亮区域：PDF 坐标 → 画布 CSS 坐标
-    if (bbox) {
-      const parts = bbox.split(',').map(Number)
-      if (parts.length === 4 && parts.every((v) => Number.isFinite(v))) {
-        const [x0, y0, x1, y1] = parts
-        const [vx0, vy0] = viewport.convertToViewportPoint(x0, y0)
-        const [vx1, vy1] = viewport.convertToViewportPoint(x1, y1)
-        setHighlightRect({
-          left: Math.min(vx0, vx1),
-          top: Math.min(vy0, vy1),
-          width: Math.abs(vx1 - vx0),
-          height: Math.abs(vy1 - vy0)
-        })
-        return
-      }
-    }
-    setHighlightRect(null)
-  }, [pdf, page, bbox])
+  }, [pdf, page])
 
   useEffect(() => {
     renderPage().catch(() => undefined)
@@ -153,7 +127,6 @@ export default function PdfViewer({
       <div className="pdf-canvas-wrap">
         <div className="pdf-canvas-box">
           <canvas ref={canvasRef} />
-          {highlightRect && <div className="pdf-highlight" style={highlightRect} />}
         </div>
       </div>
     </div>

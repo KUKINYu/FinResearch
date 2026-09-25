@@ -110,28 +110,12 @@ export default function AnomaliesView({
 
   const openSource = async (p: AnomalyPoint): Promise<void> => {
     if (p.source_file_id === null) return
-    try {
-      let bbox: string | null = null
-      try {
-        const lines = (await window.finengine.getFileLines(p.source_file_id)) as {
-          indicator: string
-          period: string
-          bbox: string | null
-        }[]
-        const hit = lines.find((l) => l.indicator === p.indicator && l.period === p.period)
-        bbox = hit?.bbox ?? null
-      } catch {
-        // 行明细失败不阻塞
-      }
-      setViewer({
-        fileId: p.source_file_id,
-        fileName: files.get(p.source_file_id) ?? '原始文件',
-        page: p.source_page ?? 1,
-        bbox
-      })
-    } catch (e) {
-      setError(String(e))
-    }
+    setViewer({
+      fileId: p.source_file_id,
+      fileName: files.get(p.source_file_id) ?? '原始文件',
+      page: p.source_page ?? 1,
+      bbox: null
+    })
   }
 
   if (projectId === null) {
@@ -277,7 +261,7 @@ export default function AnomaliesView({
           fileId={viewer.fileId}
           fileName={viewer.fileName}
           page={viewer.page}
-          bbox={viewer.bbox}
+
           onClose={() => setViewer(null)}
         />
       )}

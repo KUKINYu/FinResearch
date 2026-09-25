@@ -134,23 +134,11 @@ export default function IndicatorsView({
     try {
       setLoadingViewer(true)
       const bytes = await window.finengine.getFileContent(ind.source_file_id)
-      let bbox: string | null = null
-      try {
-        const lines = (await window.finengine.getFileLines(ind.source_file_id)) as {
-          indicator: string
-          period: string
-          bbox: string | null
-        }[]
-        const hit = lines.find((l) => l.indicator === ind.name && l.period === ind.period)
-        bbox = hit?.bbox ?? null
-      } catch {
-        // 行明细获取失败不阻塞阅读器
-      }
       setViewer({
         fileId: ind.source_file_id,
         fileName: files.get(ind.source_file_id) ?? '原始文件',
         page: ind.source_page ?? 1,
-        bbox,
+        bbox: null,
         bytes
       })
     } catch (e) {
@@ -307,7 +295,7 @@ export default function IndicatorsView({
               bytes={viewer.bytes}
               fileName={viewer.fileName}
               targetPage={viewer.page}
-              bbox={viewer.bbox}
+
             />
           </div>
         </div>

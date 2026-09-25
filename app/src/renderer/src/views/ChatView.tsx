@@ -309,7 +309,7 @@ export default function ChatView({
           fileId={viewer.fileId}
           fileName={viewer.fileName}
           page={viewer.page}
-          bbox={null}
+
           onClose={() => setViewer(null)}
         />
       )}
