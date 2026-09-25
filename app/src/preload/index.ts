@@ -53,5 +53,20 @@ contextBridge.exposeInMainWorld('finengine', {
     ipcRenderer.invoke('engine:export:save', projectId, type),
   // P1：规则设置
   getRules: (): Promise<unknown> => ipcRenderer.invoke('engine:rules:get'),
-  saveRules: (settings: unknown): Promise<unknown> => ipcRenderer.invoke('engine:rules:save', settings)
+  saveRules: (settings: unknown): Promise<unknown> => ipcRenderer.invoke('engine:rules:save', settings),
+  // P1：公告监控 / 风险评分卡 / 研究笔记
+  fetchAnnouncements: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:announcements:fetch', projectId),
+  getAnnouncements: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:announcements:get', projectId),
+  summarizeAnnouncements: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:announcements:summarize', projectId),
+  getRiskScore: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:riskscore:get', projectId),
+  getNotes: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:notes:get', projectId),
+  addNote: (projectId: number, content: string): Promise<unknown> =>
+    ipcRenderer.invoke('engine:notes:add', projectId, content),
+  reflectNotes: (projectId: number): Promise<unknown> =>
+    ipcRenderer.invoke('engine:notes:reflect', projectId)
 })

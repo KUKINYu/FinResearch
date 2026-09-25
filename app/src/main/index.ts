@@ -187,6 +187,28 @@ app.whenReady().then(async () => {
   ipcMain.handle('engine:rules:save', (_e, settings: unknown) =>
     engineRequest('/api/rules', { method: 'POST', body: { settings } })
   )
+  // P1：公告监控 / 风险评分卡 / 研究笔记
+  ipcMain.handle('engine:announcements:fetch', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/announcements/fetch`, { method: 'POST' })
+  )
+  ipcMain.handle('engine:announcements:get', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/announcements`)
+  )
+  ipcMain.handle('engine:announcements:summarize', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/announcements/summarize`, { method: 'POST' })
+  )
+  ipcMain.handle('engine:riskscore:get', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/riskscore`)
+  )
+  ipcMain.handle('engine:notes:get', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/notes`)
+  )
+  ipcMain.handle('engine:notes:add', (_e, projectId: number, content: string) =>
+    engineRequest(`/api/projects/${projectId}/notes`, { method: 'POST', body: { content } })
+  )
+  ipcMain.handle('engine:notes:reflect', (_e, projectId: number) =>
+    engineRequest(`/api/projects/${projectId}/notes/reflect`, { method: 'POST' })
+  )
   // P1：成果导出（引擎生成文件 → 保存对话框 → 写盘）
   ipcMain.handle(
     'engine:export:save',

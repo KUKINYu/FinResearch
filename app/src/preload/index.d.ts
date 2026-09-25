@@ -73,6 +73,9 @@ export interface FinEngineBridge {
     provider: string
     model?: string
     api_key?: string
+    quick_provider?: string
+    quick_model?: string
+    quick_api_key?: string
   }): Promise<{ ok: boolean }>
   chatProject(projectId: number, question: string): Promise<unknown>
   searchStocks(q: string): Promise<{ results: { code: string; name: string }[] }>

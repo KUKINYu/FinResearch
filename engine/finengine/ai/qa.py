@@ -142,9 +142,28 @@ def _get_settings() -> tuple[str, str, str]:
     return provider, model, api_key
 
 
-def answer_question(project_id: int, question: str) -> dict:
-    """项目级 RAG 问答入口。"""
+def _get_tier_settings(tier: str) -> tuple[str, str, str]:
+    """按任务层级读设置：deep = 深度分析；quick = 快速任务（摘要/检索类）。
+
+    quick 未配置时自动回落到 deep 配置。
+    """
     provider, model, api_key = _get_settings()
+    if tier == "quick":
+        with SessionLocal() as session:
+            rows = session.execute(select(Setting)).scalars().all()
+            kv = {s.key: s.value for s in rows}
+        q_provider = kv.get("ai.quick_provider", "")
+        q_key = decrypt(kv.get("ai.quick_api_key", ""))
+        if q_provider and q_key:
+            provider = q_provider
+            model = kv.get("ai.quick_model", "")
+            api_key = q_key
+    return provider, model, api_key
+
+
+def answer_question(project_id: int, question: str, tier: str = "deep") -> dict:
+    """项目级 RAG 问答入口。tier: deep（深度分析）| quick（快速任务）。"""
+    provider, model, api_key = _get_tier_settings(tier)
     if not provider or not api_key:
         return {
             "ok": False,
@@ -168,6 +187,38 @@ def answer_question(project_id: int, question: str) -> dict:
             {"file_id": c["file_id"], "page_no": c["page_no"], "snippet": c["text"][:150]}
             for c in chunks
         ],
+        "usage": {
+            "prompt_tokens": result.prompt_tokens,
+            "completion_tokens": result.completion_tokens,
+            "model": result.model,
+        },
+    }
+
+
+def summarize_text(project_id: int, question: str, context: str) -> dict:
+    """轻量摘要任务（quick 层级，不给检索、只给指定文本）。
+
+    用于公告摘要、风险小结等高频低成本场景。
+    """
+    provider, model, api_key = _get_tier_settings("quick")
+    if not provider or not api_key:
+        return {"ok": False, "error": "未配置 AI 服务"}
+    if model == "":
+        model = PROVIDERS.get(provider, {}).get("default_model", "")
+    messages = [
+        {
+            "role": "system",
+            "content": "你是金融研究助理。只依据给定内容做简明摘要，标注关键数字，不要编造。",
+        },
+        {
+            "role": "user",
+            "content": f"任务：{question}\n\n内容：\n{context[:4000]}",
+        },
+    ]
+    result = chat(provider, api_key, model, messages, temperature=0.1)
+    return {
+        "ok": True,
+        "answer": result.answer,
         "usage": {
             "prompt_tokens": result.prompt_tokens,
             "completion_tokens": result.completion_tokens,

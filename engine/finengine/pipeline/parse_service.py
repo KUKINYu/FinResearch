@@ -137,6 +137,12 @@ def _parse_pdf(file_id: int, path: Path) -> None:
             build_index()
         except Exception as e:  # noqa: BLE001
             print(f"[finengine] 搜索索引失败：{e}")
+        try:
+            from ..notes_service import add_data_update_note
+
+            add_data_update_note(f.project_id, file_id)
+        except Exception as e:  # noqa: BLE001
+            print(f"[finengine] 研究笔记生成失败：{e}")
 
     with SessionLocal() as session:
         f = session.get(File, file_id)

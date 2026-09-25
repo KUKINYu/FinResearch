@@ -1144,6 +1144,277 @@ body {
   padding: 10px;
 }
 
+/* ---- P1 风险评分卡 ---- */
+.risk-section {
+  margin-top: 20px;
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.risk-card h4,
+.announce-panel h4,
+.notes-panel h4 {
+  font-size: 14px;
+  color: var(--navy);
+  margin: 0;
+}
+
+.risk-overall {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.risk-level-badge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 14px;
+}
+
+.level-low {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.level-mid {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.level-high {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.level-critical {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.risk-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.risk-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.risk-body {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.risk-radar {
+  width: 320px;
+  height: 260px;
+  flex-shrink: 0;
+}
+
+.risk-dims {
+  list-style: none;
+  flex: 1;
+}
+
+.risk-dims li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.risk-dim-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 3px;
+}
+
+.risk-dim-name b {
+  margin-left: 8px;
+  color: var(--blue);
+}
+
+.risk-dim-basis {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ---- P1 公告监控 ---- */
+.announce-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.announce-summary {
+  background: var(--blue-light);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.announce-layers {
+  margin-top: 8px;
+}
+
+.announce-layer-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 10px 0 6px;
+}
+
+.announce-layer-title em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--blue);
+  font-weight: 400;
+}
+
+.announce-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.announce-layer ul {
+  list-style: none;
+}
+
+.announce-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-bottom: 1px dashed var(--gray-border);
+  font-size: 12px;
+}
+
+.announce-item.negative {
+  background: #fff7f7;
+}
+
+.neg-badge {
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.announce-source {
+  color: var(--text-muted);
+  font-size: 11px;
+  flex-shrink: 0;
+  width: 34px;
+}
+
+.announce-title {
+  flex: 1;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.announce-date {
+  color: var(--text-muted);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.announce-link {
+  color: var(--blue);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* ---- P1 研究笔记 ---- */
+.notes-section {
+  margin-top: 18px;
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.note-input-row {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.note-input-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.notes-list {
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.note-item {
+  padding: 10px 12px;
+  border-left: 3px solid var(--gray-border);
+  background: var(--gray-bg);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 8px;
+}
+
+.note-data_update {
+  border-left-color: var(--blue);
+}
+
+.note-reflection {
+  border-left-color: #8b5cf6;
+}
+
+.note-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.note-kind {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.note-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.note-content {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
 /* ---- PDF 阅读器（原文核对弹窗） ---- */
 .viewer-overlay {
   position: fixed;

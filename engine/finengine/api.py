@@ -342,6 +342,9 @@ class AISettingsIn(BaseModel):
     provider: str
     model: str | None = None
     api_key: str | None = None  # 留空 = 不修改已存的 Key
+    quick_provider: str | None = None  # P1-7 双模型分层：快速任务
+    quick_model: str | None = None
+    quick_api_key: str | None = None
 
 
 @router.get("/ai/providers")
@@ -361,6 +364,9 @@ def get_ai_settings(session: Session = Depends(get_session)):
         "provider": kv.get("ai.provider", ""),
         "model": kv.get("ai.model", ""),
         "has_key": bool(kv.get("ai.api_key", "")),
+        "quick_provider": kv.get("ai.quick_provider", ""),
+        "quick_model": kv.get("ai.quick_model", ""),
+        "has_quick_key": bool(kv.get("ai.quick_api_key", "")),
     }
 
 
@@ -386,6 +392,13 @@ def save_ai_settings(body: AISettingsIn, session: Session = Depends(get_session)
                 s.value = ""
     if body.api_key:
         upsert("ai.api_key", encrypt(body.api_key))
+    # 快速任务模型（可选；不配则回落用深度模型）
+    if body.quick_provider is not None:
+        upsert("ai.quick_provider", body.quick_provider)
+    if body.quick_model is not None:
+        upsert("ai.quick_model", body.quick_model)
+    if body.quick_api_key:
+        upsert("ai.quick_api_key", encrypt(body.quick_api_key))
     session.commit()
     return {"ok": True}
 
@@ -405,6 +418,87 @@ def chat_project(project_id: int, body: ChatIn, session: Session = Depends(get_s
     if len(question) < 2:
         return {"ok": False, "error": "问题太短"}
     return answer_question(project_id, question)
+
+
+# ---------- 研究笔记（P1-4：研究记忆与反思） ----------
+
+@router.get("/projects/{project_id}/notes")
+def get_notes(project_id: int):
+    from .notes_service import list_notes
+
+    return {"notes": list_notes(project_id)}
+
+
+class NoteIn(BaseModel):
+    content: str
+
+
+@router.post("/projects/{project_id}/notes")
+def add_note(project_id: int, body: NoteIn, session: Session = Depends(get_session)):
+    from .notes_service import add_manual_note
+
+    p = session.get(Project, project_id)
+    if p is None:
+        raise HTTPException(404, "项目不存在")
+    content = (body.content or "").strip()
+    if not content:
+        raise HTTPException(400, "笔记内容为空")
+    return add_manual_note(project_id, content)
+
+
+@router.delete("/projects/{project_id}/notes/{note_id}")
+def remove_note(project_id: int, note_id: int, session: Session = Depends(get_session)):
+    from .notes_service import delete_note
+
+    delete_note(note_id)
+    return {"ok": True}
+
+
+@router.post("/projects/{project_id}/notes/reflect")
+def reflect_note(project_id: int):
+    from .notes_service import ai_reflection
+
+    return ai_reflection(project_id)
+
+
+# ---------- 公告与舆情（P1-2） ----------
+
+@router.post("/projects/{project_id}/announcements/fetch")
+def fetch_announcements(project_id: int, session: Session = Depends(get_session)):
+    from .announcements import fetch_and_store
+
+    p = session.get(Project, project_id)
+    if p is None:
+        raise HTTPException(404, "项目不存在")
+    if not p.company_code:
+        raise HTTPException(400, "项目未填写公司证券代码：请先在项目档案中补充标的公司代码")
+    return fetch_and_store(project_id, p.company_code)
+
+
+@router.get("/projects/{project_id}/announcements")
+def get_announcements(project_id: int):
+    from .announcements import list_announcements
+
+    return list_announcements(project_id)
+
+
+@router.post("/projects/{project_id}/announcements/summarize")
+def summarize_announcements(project_id: int):
+    from .announcements import ai_summarize
+
+    return ai_summarize(project_id)
+
+
+# ---------- 风险评分卡（P1-3） ----------
+
+@router.get("/projects/{project_id}/riskscore")
+def get_risk_score(project_id: int, session: Session = Depends(get_session)):
+    from .risk_score import compute_risk_score
+
+    p = session.get(Project, project_id)
+    if p is None:
+        raise HTTPException(404, "项目不存在")
+    return compute_risk_score(project_id)
 
 
 # ---------- 规则设置（P1：开关 + 阈值可调） ----------

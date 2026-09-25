@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FileInfo } from '../types'
 import PdfSourceModal from './PdfSourceModal'
+import RiskScoreCard from './RiskScoreCard'
+import AnnouncementsPanel from './AnnouncementsPanel'
 
 interface AnomalyPoint {
   indicator: string
@@ -40,6 +42,7 @@ export default function AnomaliesView({
   const [analyzing, setAnalyzing] = useState(false)
   const [rulesOpen, setRulesOpen] = useState(false)
   const [rules, setRules] = useState<RuleInfo[]>([])
+  const [companyCode, setCompanyCode] = useState('')
   const [viewer, setViewer] = useState<{
     fileId: number
     fileName: string
@@ -56,6 +59,7 @@ export default function AnomaliesView({
       const map = new Map<number, string>()
       for (const f of (detail.files ?? []) as FileInfo[]) map.set(f.id, f.original_name)
       setFiles(map)
+      setCompanyCode(detail.company_code ?? '')
     } catch (e) {
       setError(String(e))
     }
@@ -277,6 +281,13 @@ export default function AnomaliesView({
           onClose={() => setViewer(null)}
         />
       )}
+
+      <div className="risk-section">
+        <RiskScoreCard projectId={projectId} />
+      </div>
+      <div className="risk-section">
+        <AnnouncementsPanel projectId={projectId} hasCompanyCode={companyCode !== ''} />
+      </div>
     </div>
   )
 }

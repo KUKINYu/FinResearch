@@ -12,6 +12,9 @@ interface AISettings {
   provider: string
   model: string
   has_key: boolean
+  quick_provider: string
+  quick_model: string
+  has_quick_key: boolean
 }
 
 interface ChatSource {
@@ -39,6 +42,9 @@ export default function ChatView({
   const [selProvider, setSelProvider] = useState('deepseek')
   const [selModel, setSelModel] = useState('')
   const [apiKey, setApiKey] = useState('')
+  const [quickProvider, setQuickProvider] = useState('')
+  const [quickModel, setQuickModel] = useState('')
+  const [quickKey, setQuickKey] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [question, setQuestion] = useState('')
   const [busy, setBusy] = useState(false)
@@ -58,6 +64,8 @@ export default function ChatView({
       setSettings(s)
       setSelProvider(s.provider || 'deepseek')
       setSelModel(s.model)
+      setQuickProvider(s.quick_provider)
+      setQuickModel(s.quick_model)
     } catch (e) {
       setError(String(e))
     }
@@ -76,7 +84,10 @@ export default function ChatView({
       await window.finengine.saveAISettings({
         provider: selProvider,
         model: selModel,
-        api_key: apiKey
+        api_key: apiKey,
+        quick_provider: quickProvider,
+        quick_model: quickModel,
+        quick_api_key: quickKey
       })
       setSetupOpen(false)
       setApiKey('')
@@ -190,6 +201,42 @@ export default function ChatView({
               onChange={(e) => setApiKey(e.target.value)}
             />
           </div>
+          <p className="setup-note">—— 以下为「快速任务模型」配置（可选）：公告摘要、风险小结等轻量任务用它，可省 token ——</p>
+          <div className="setup-row">
+            <label>快速模型</label>
+            <select
+              value={quickProvider}
+              onChange={(e) => {
+                setQuickProvider(e.target.value)
+                const p = providers.find((x) => x.id === e.target.value)
+                if (p) setQuickModel(p.default_model)
+              }}
+            >
+              <option value="">不单独配置（用上面的模型）</option>
+              {providers.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {quickProvider && (
+            <>
+              <div className="setup-row">
+                <label>快速 Key</label>
+                <input
+                  type="password"
+                  placeholder={settings?.has_quick_key ? '已保存（留空则不修改）' : '粘贴快速模型 API Key'}
+                  value={quickKey}
+                  onChange={(e) => setQuickKey(e.target.value)}
+                />
+              </div>
+              <div className="setup-row">
+                <label>模型名</label>
+                <input value={quickModel} onChange={(e) => setQuickModel(e.target.value)} />
+              </div>
+            </>
+          )}
           <div className="setup-actions">
             <button className="btn btn-primary btn-sm" onClick={saveSettings}>
               保存

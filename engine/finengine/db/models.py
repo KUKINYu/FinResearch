@@ -150,3 +150,34 @@ class MarketCache(Base):
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
     data_json: Mapped[str] = mapped_column(Text, default="")
     fetched_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.now)
+
+
+class ResearchNote(Base):
+    """研究笔记（P1-4 研究记忆与反思）。
+
+    kind: manual=用户手记；data_update=新资料入库自动对比；reflection=AI 反思
+    """
+
+    __tablename__ = "research_notes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(20), default="manual")
+    content: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class Announcement(Base):
+    """标的公司公告/新闻（P1-2 公告与舆情监控）。"""
+
+    __tablename__ = "announcements"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    code: Mapped[str] = mapped_column(String(20), index=True)
+    title: Mapped[str] = mapped_column(Text)
+    announce_date: Mapped[str | None] = mapped_column(String(20))  # YYYY-MM-DD
+    url: Mapped[str | None] = mapped_column(Text)
+    source: Mapped[str | None] = mapped_column(String(50))  # 公告/新闻
+    negative: Mapped[bool] = mapped_column(default=False)  # 负面词命中（诉讼/处罚/问询等）
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())

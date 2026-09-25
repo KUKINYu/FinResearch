@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FileInfo, IndicatorInfo, ProjectInfo } from '../types'
+import NotesPanel from './NotesPanel'
 
 const STATUS_TEXT: Record<string, string> = {
   uploaded: '已上传',
@@ -210,10 +211,14 @@ export default function ProjectsView({
               <div className="indicator-preview">
                 <h4>已提取财务数据（{indicators.length} 条）</h4>
                 <p className="placeholder">
-                  完整指标看板与趋势图将在「财务指标」工作区展示（M4 里程碑）。
+                  完整指标看板与趋势图见「财务指标」工作区。
                 </p>
               </div>
             )}
+
+            <div className="notes-section">
+              <NotesPanel projectId={detail.id} />
+            </div>
           </>
         )}
       </div>

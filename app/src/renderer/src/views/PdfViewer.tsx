@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
+// ?url 导入让 Vite 在开发与打包两种模式下都正确解析 worker 资源
+// （此前 new URL(..., import.meta.url) 在 dev 模式下解析到源码目录导致 404、PDF 无法渲染）
+import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
-// Vite 打包 worker 资源；版本需与 pdfjs-dist 匹配
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString()
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl
 
 interface Props {
   bytes: ArrayBuffer
