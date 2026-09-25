@@ -15,3 +15,6 @@ pandas>=2.0
 # 成果导出（P1）
 python-docx>=1.1
 openpyxl>=3.1
+# 数据源备用（P1-9）与 MCP 服务器（P1-6）
+baostock>=0.8
+fastmcp>=2.0

@@ -7,6 +7,7 @@
 """
 
 import argparse
+import sys
 
 
 def main() -> None:
@@ -29,7 +30,33 @@ def main() -> None:
 
         serve(args.host, args.port)
     elif args.command == "analyze":
-        print("analyze 命令将在 M2/M4 里程碑实现（文档解析与财务提取）。")
+        # 无头分析：创建项目 → 解析 → 打印指标与异常（供 agent 对话内使用）
+        from pathlib import Path
+
+        from .mcp_server import analyze_document
+
+        p = Path(args.path)
+        if not p.exists():
+            print(f"文件不存在：{p}", file=sys.stderr)
+            raise SystemExit(1)
+        print(f"正在分析 {p.name} …（数百页文件可能需要 1-2 分钟）")
+        result = analyze_document(str(p))
+        if not result.get("ok"):
+            print(f"分析失败：{result.get('error')}", file=sys.stderr)
+            raise SystemExit(1)
+        print(f"完成：项目 {result['project_id']}，提取财务行 {result['financial_lines']} 条，"
+              f"发现异常 {result['anomalies']} 条")
+        from .mcp_server import get_indicators, get_anomalies
+
+        print("\n=== 财务指标 ===")
+        for ind in get_indicators(result["project_id"]):
+            page = f"（第{ind['source_page']}页）" if ind.get("source_page") else ""
+            print(f"  {ind['name']} {ind['period']}: {ind['value']:,.2f}{ind['unit']}{page}")
+        anomalies = get_anomalies(result["project_id"])
+        if anomalies:
+            print("\n=== 发现异常 ===")
+            for a in anomalies:
+                print(f"  [{a['severity']}] {a['title']}")
     elif args.command == "version":
         from . import __version__
 

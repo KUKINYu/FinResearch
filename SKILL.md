@@ -23,11 +23,26 @@ description: 金融研究与尽调辅助软件 FinResearch。当用户想要：�
 - 界面包含五个工作区：项目档案 | 财务指标 | 异常发现 | 全文搜索 | AI 问答
 
 ### 3. 无头分析（对话内直接分析，无需打开界面）
-- 单文件分析：`.venv/Scripts/python -m finengine analyze <文件路径>`（engine/.venv；Windows 下 `engine\.venv\Scripts\python`）
-- 分析输出包含：提取的财务指标（按年份）、发现的异常（含页码溯源）、可搜索内容摘要
+- 单文件分析：`engine\.venv\Scripts\python -m finengine analyze <文件路径>`（macOS/Linux 用 `engine/.venv/bin/python`；在 engine 目录下运行）
+- 分析输出包含：提取的财务指标（按年份、含出处页码）、发现的异常（含页码溯源）
 - 回答用户问题时应引用 CLI 输出中的页码出处，**不得编造数据**；CLI 没有输出依据时明确说"资料中没有找到"
 
-### 4. 重要原则
+### 4. MCP 服务器（供 Claude Desktop / Cursor 等客户端调用）
+- Windows 运行 `scripts\run-mcp.bat`；macOS/Linux 运行 `scripts/run-mcp.sh`
+- 客户端配置（Claude Desktop 的 claude_desktop_config.json）：
+```json
+{
+  "mcpServers": {
+    "finresearch": {
+      "command": "<本仓库路径>/engine/.venv/Scripts/python.exe",
+      "args": ["-m", "finengine.mcp_server"]
+    }
+  }
+}
+```
+- 可用工具：list_projects / get_indicators / get_anomalies / search_documents / ask_question / get_risk_score / analyze_document（传入本机文件路径即可无头分析）
+
+### 5. 重要原则
 - **一切数据以用户上传的原始资料为准**：不得凭空编造财务数字；每条结论尽量附带文件页码
 - 用户资料绝对不离开本机：仅 AI 分析时把检索到的相关片段发送给用户自己配置的 AI 服务（BYOK）
 - 依赖安装失败时，把报错信息展示给用户，不要反复盲目重试
